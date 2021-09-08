@@ -1,15 +1,32 @@
 # Pocketbook Texteditor
 Texteditor for Pocketbook using a bluetooth keyboard.
 
-//TODO add screenshots
+<img src="/screenshots/textEditorNoDevices.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorDeviceSelection.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="15%" height="15%">
 
-## Features
+## Tested on
+
+### Devices
+* Pocketbook Touch HD3 (PB632)
+
+### Keyboard
+* Logitech K380
 
 ## Requirements
-
+* Bluetooth interface at PB
+* Application PBTerm (https://userpage.physik.fu-berlin.de/~jtt/PB/)
+* Root Access is necessary to register new inputs and access key events. (It is necessary to execute "jailbreak.app".) (https://www.mobileread.com/forums/showthread.php?t=325185)
 
 ## Installation
 Download and unzip the file from releases and place the texteditor.app into the "applications" folder of your pocketbook. 
+
+## Usage
+
+Currenlty the first pairing is not integrated into the application. Via the settings menu of the PB the registration of an keyboard is blocked. Therefore that has to be done once manually.  
+Enable Bluetooth on the Pocketbook in the Settings menu.
+Open the PBTerm application and start bluetoothctl.
+There you have to pair your bluetooth keyboard. (https://wiki.archlinux.org/title/bluetooth_keyboard)
+
+Once you have the keyboard paired you can open the texteditor.app and should be able to see your keyboard. Once the keyboard is selected, the input mode is opened. (To exit input mode press "ESC")
 
 ## How to build
 
