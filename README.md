@@ -1,7 +1,7 @@
 # Pocketbook Texteditor
 Texteditor for Pocketbook that connects to an external bluetooth keyboard.
 
-<img src="/screenshots/textEditorNoDevices.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorDeviceSelection.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorFileSelection.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="15%" height="15%">
+<img src="/screenshots/textEditorNoDevices.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorDeviceSelection.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorFileSelection.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="20%" height="20%">
 
 ## Tested on
 
