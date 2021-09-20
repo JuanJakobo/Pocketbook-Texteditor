@@ -21,7 +21,7 @@ EventHandler *events = nullptr;
 */
 int Inkview_handler(int type, int par1, int par2)
 {
-    //Log::writeInfoLog(std::to_string(type));
+    //Log::writeInfoLog("PB event " + std::to_string(type));
     switch (type)
     {
     case EVT_INIT:
@@ -53,12 +53,12 @@ int main()
 
 
     //draw startscreen
-    //auto textHeight = ScreenHeight() / 30;
-    //auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
-    //SetFont(startscreenFont, BLACK);
-    //DrawTextRect(0, (ScreenHeight() / 3) * 2, ScreenWidth(), textHeight, "Text Editor", ALIGN_CENTER);
-    //CloseFont(startscreenFont);
-    //FullUpdate();
+    auto textHeight = ScreenHeight() / 30;
+    auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
+    SetFont(startscreenFont, BLACK);
+    DrawTextRect(0, (ScreenHeight() / 3) * 2, ScreenWidth(), textHeight, "Text Editor", ALIGN_CENTER);
+    CloseFont(startscreenFont);
+    FullUpdate();
 
     InkViewMain(Inkview_handler);
     return 0;
