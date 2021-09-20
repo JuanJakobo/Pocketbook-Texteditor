@@ -24,9 +24,8 @@ void DevicesViewEntry::draw(const ifont *entryFont, const ifont *entryFontBold, 
     SetFont(entryFont, BLACK);
 
     DrawTextRect(_position.x, _position.y + heightOfTitle, _position.w, fontHeight, _entry.sysfs.c_str(), ALIGN_LEFT);
-
-		DrawTextRect(_position.x, _position.y + heightOfTitle + fontHeight, _position.w, fontHeight, _entry.uniq.c_str(), ALIGN_LEFT);
-        DrawTextRect(_position.x, _position.y + heightOfTitle + fontHeight, _position.w, fontHeight, std::to_string(_entry.eventID).c_str(), ALIGN_RIGHT);
+    DrawTextRect(_position.x, _position.y + heightOfTitle + fontHeight, _position.w, fontHeight, _entry.uniq.c_str(), ALIGN_LEFT);
+    DrawTextRect(_position.x, _position.y + heightOfTitle + fontHeight, _position.w, fontHeight, std::to_string(_entry.eventID).c_str(), ALIGN_RIGHT);
 
     int line = (_position.y + _position.h) - 1;
     DrawLine(0, line, ScreenWidth(), line, BLACK);
