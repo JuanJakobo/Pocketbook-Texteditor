@@ -31,6 +31,7 @@ MainMenu::MainMenu(const string &name)
 
     _contentRect = iRect(0, _panelMenuHeight, ScreenWidth(), (ScreenHeight() - PanelHeight() - _panelMenuHeight), 0);
 
+    //TODO hide Panel
     SetHardTimer("PANELUPDATE", panelHandlerStatic, 110000);
     DrawPanel(NULL, "", NULL, -1);
 }
@@ -39,8 +40,8 @@ MainMenu::~MainMenu()
 {  
     CloseFont(_menuFont);
     free(_menu);
-    free(_connect);
     free(_open);
+    free(_orientation);
     free(_exit);
 }
 
@@ -55,8 +56,8 @@ int MainMenu::createMenu(const iv_menuhandler &handler)
     imenu mainMenu[] =
         {
             {ITEM_HEADER, 0, _menu, NULL},
-            {ITEM_ACTIVE, 101, _connect, NULL},
-            {ITEM_ACTIVE, 102, _open, NULL},
+            {ITEM_ACTIVE, 101, _open, NULL},
+            {ITEM_ACTIVE, 102, _orientation, NULL},
             {ITEM_ACTIVE, 103, _exit, NULL},
             {0, 0, NULL, NULL}};
 

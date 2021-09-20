@@ -49,7 +49,7 @@ private:
 
     char *_menu = strdup("Menu");
     char *_open = strdup("Open editor");
-		char *_connect = strdup("Register keyboard");
+    char *_orientation = strdup("Change orientation");
     char *_exit = strdup("Close App");
 
     /**
