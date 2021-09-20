@@ -1,7 +1,7 @@
 # Pocketbook Texteditor
 Texteditor for Pocketbook using a bluetooth keyboard.
 
-<img src="/screenshots/textEditorNoDevices.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorDeviceSelection.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="15%" height="15%">
+<img src="/screenshots/textEditorNoDevices.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorDeviceSelection.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorFileSelection.bmp" width="15%" height="15%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="15%" height="15%">
 
 ## Tested on
 
@@ -27,6 +27,10 @@ Open the PBTerm application and start bluetoothctl.
 There you have to pair your bluetooth keyboard. (https://wiki.archlinux.org/title/bluetooth_keyboard)
 
 Once you have the keyboard paired you can open the texteditor.app and should be able to see your keyboard. Once the keyboard is selected, the input mode is opened. (To exit input mode press "ESC")
+
+### Keymap setup
+There are several keymaps available inside kbLayouts. Please select the one acording to your needs, rename it to
+"map.keys" and place it inside system/config/textEditor.
 
 ## How to build
 
