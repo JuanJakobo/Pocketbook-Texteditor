@@ -54,11 +54,13 @@ set(SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp
 			${CMAKE_SOURCE_DIR}/src/handler/eventHandler.cpp 		
 			${CMAKE_SOURCE_DIR}/src/handler/mainMenu.cpp 		
 			${CMAKE_SOURCE_DIR}/src/util/log.cpp 		
-			${CMAKE_SOURCE_DIR}/src/ui/devicesView.cpp 		
-			${CMAKE_SOURCE_DIR}/src/ui/devicesViewEntry.cpp 		
 			${CMAKE_SOURCE_DIR}/src/ui/listView.cpp 		
 			${CMAKE_SOURCE_DIR}/src/ui/listViewEntry.cpp 		
-
+            ${CMAKE_SOURCE_DIR}/src/ui/textView/textView.cpp
+			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesView.cpp 		
+			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesViewEntry.cpp 		
+			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileView.cpp
+			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileViewEntry.cpp 		
 )
 
 add_executable(Texteditor.app ${SOURCES})
@@ -67,6 +69,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/handler/
     ${CMAKE_SOURCE_DIR}/src/util/
     ${CMAKE_SOURCE_DIR}/src/ui/
+    ${CMAKE_SOURCE_DIR}/src/ui/textView/
+    ${CMAKE_SOURCE_DIR}/src/ui/devicesView/
+    ${CMAKE_SOURCE_DIR}/src/ui/fileView/
 )
 
 target_link_libraries(Texteditor.app PRIVATE inkview pthread freetype)
