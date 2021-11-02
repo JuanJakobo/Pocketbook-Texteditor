@@ -26,10 +26,11 @@ struct input_event event;
 
 TextView::TextView(const irect *contentRect, int page, Device device, const string &filePath) : _contentRect(contentRect), _shownPage(page)
 {
+    //TODO exists twice
     auto pageHeight = 0;
     auto contentHeight = _contentRect->h - _footerHeight;
 
-    _footerHeight = _contentRect->h / 10;
+    _footerHeight = _contentRect->h / 15;
     _footerFontHeight = 0.3 * _footerHeight;
     _textHeight = ScreenHeight()/35;
 
@@ -40,7 +41,7 @@ TextView::TextView(const irect *contentRect, int page, Device device, const stri
     _textBeginX = margin;
     _textEndX = ScreenWidth() - _textBeginX - margin;
     _textBeginY = contentRect->y; //+ margin;
-    _textEndY = _contentRect->h+_contentRect->y -_footerHeight; // - margin;
+    _textEndY = _contentRect->h -_footerHeight; // - margin;
 
     _footerFont = OpenFont("LiberationMono", _footerFontHeight, FONT_STD);
     _textFont = OpenFont("Roboto", _textHeight , FONT_STD);
@@ -210,6 +211,7 @@ void TextView::handleKeyEvents(int eventID, const string &path)
         //TODO make ü avialble
         unsigned char key;
 
+        //TODO do in thread
         while(inputSession) {
             SetFont(_textFont, BLACK);
             eventFile.read(data,sizeof(event));
@@ -250,7 +252,9 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                                 }
                                 _lineWidth.erase(_lineCount);
                                 _lineCount--;
-                            }
+                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                            }else{
 
                             if(!_currentText.empty()){
 
@@ -267,6 +271,7 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                             {
                                 FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
                                 PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                            }
                             }
                         }else{
                             Message(ICON_INFORMATION, "Information", "no more characters to delete.", 2000);
