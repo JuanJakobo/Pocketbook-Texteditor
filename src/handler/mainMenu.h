@@ -26,7 +26,6 @@ public:
     ~MainMenu();
 
     irect *getContentRect() { return &_contentRect; };
-    irect *getMenuButtonRect() { return &_menuButtonRect; };
 
     /**
         * Shows the menu on the screen, lets the user choose menu options and then redirects the handler to the caller
@@ -36,14 +35,6 @@ public:
     int createMenu(const iv_menuhandler &handler);
 
 private:
-    ifont *_menuFont;
-
-    int _panelMenuBeginX;
-    int _panelMenuBeginY;
-    int _panelMenuHeight;
-    int _mainMenuWidth;
-    irect _menuButtonRect;
-
     imenu _mainMenu;
     irect _contentRect;
 
@@ -51,10 +42,5 @@ private:
     char *_open = strdup("Open editor");
     char *_orientation = strdup("Change orientation");
     char *_exit = strdup("Close App");
-
-    /**
-        * Functions needed to call C function, handles the panel
-        */
-    static void panelHandlerStatic();
 };
 #endif
