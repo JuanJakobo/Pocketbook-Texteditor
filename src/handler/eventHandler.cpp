@@ -52,6 +52,8 @@ int EventHandler::eventDistributor(const int type, const int par1, const int par
 {
     if (ISPOINTEREVENT(type))
         return EventHandler::pointerHandler(type, par1, par2);
+    else if (ISKEYEVENT(type))
+        return EventHandler::keyHandler(type,par1,par2);
     return 0;
 }
 
@@ -177,6 +179,30 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
             }
         }
     }
+    return 0;
+}
+
+int EventHandler::keyHandler(const int type, const int par1, const int par2)
+{
+    //menu button
+    if (type == EVT_KEYPRESS)
+    {
+        if (par1 == 23)
+        {
+            return _menu.createMenu(EventHandler::mainMenuHandlerStatic);
+        }
+        //left button -> pre page
+        else if (par1 == 24)
+        {
+            return 1;
+        }
+        //right button -> next page
+        else if (par1 == 25)
+        {
+            return 1;
+        }
+    }
+
     return 0;
 }
 
