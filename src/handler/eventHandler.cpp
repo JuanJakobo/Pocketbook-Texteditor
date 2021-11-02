@@ -254,8 +254,13 @@ void EventHandler::createInputEvent()
             _devicesView->draw();
             _currentView = Views::DEVICEVIEW;
         }else{
+            //TODO set font
             FillAreaRect(_menu.getContentRect(), WHITE);
+            auto textHeight = ScreenHeight() / 45;
+            auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
+            SetFont(startscreenFont, BLACK);
             DrawTextRect2(_menu.getContentRect(), "No bluetooth keyboards available. Please pair a new one using bluetoothctl");
+            CloseFont(startscreenFont);
             _currentView = Views::DEFAULTVIEW;
             PartialUpdate(_menu.getContentRect()->x, _menu.getContentRect()->y, _menu.getContentRect()->w, _menu.getContentRect()->h);
         }
