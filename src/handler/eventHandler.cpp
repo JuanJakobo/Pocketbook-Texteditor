@@ -99,6 +99,10 @@ void EventHandler::mainMenuHandler(const int index)
             //Exit
         case 103:
             {
+                if(IsBluetoothEnabled() == 1){
+                    Message(ICON_INFORMATION,"Information","Disabling Bluetooth",2000);
+                    SetBluetoothOff();
+                }
                 CloseApp();
                 break;
             }
