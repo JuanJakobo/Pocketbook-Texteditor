@@ -208,12 +208,9 @@ int EventHandler::keyHandler(const int type, const int par1, const int par2)
 
 void EventHandler::createInputEvent()
 {
-    //auto a = GetBluetoothStatus();
-    //Log::writeInfoLog("bluetooth status " + std::to_string(a));
-
-    if (GetBluetoothMode() == BLUETOOTH_OFF)
+ 
+    if(IsBluetoothEnabled() == 0)
         SetBluetoothOn();
-
     if(IsBluetoothAwake() == 0)
         BluetoothWakeUp();
 
