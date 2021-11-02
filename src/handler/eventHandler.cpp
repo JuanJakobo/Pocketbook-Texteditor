@@ -111,12 +111,7 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
 {
     if (type == EVT_POINTERUP)
     {
-        //if menu is clicked
-        if (IsInRect(par1, par2, _menu.getMenuButtonRect()) == 1)
-        {
-            return _menu.createMenu(EventHandler::mainMenuHandlerStatic);
-        }
-        else if (_currentView == Views::DEVICEVIEW)
+        if (_currentView == Views::DEVICEVIEW)
         {
             if (_devicesView->checkIfEntryClicked(par1,par2))
             {
@@ -145,11 +140,16 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
                         devname = line.substr(line.find('=')+1);
                 }
 
-                //auto z = system ("/mnt/secure/su rm event7");
-                string mknod = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
-                Log::writeInfoLog(mknod);
-                auto i = system(mknod.c_str());
-                Log::writeInfoLog("system return code " + std::to_string(i));
+                string systemCommand ="/mnt/secure/su rm /dev/input/event" + std::to_string(_currentDevice.eventID);
+                auto i = system(systemCommand.c_str());
+                systemCommand = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
+                i = system(systemCommand.c_str());
+                if(i != 0){
+                    Message(ICON_ERROR,"Error","Could not create link to input.",2000);
+                    Log::writeInfoLog("Could not create link to input. System return code " + std::to_string(i));
+                    _devicesView->invertCurrentEntryColor();
+                    return 1;
+                }
 
 
                 if(_currentDevice.name.empty()){
