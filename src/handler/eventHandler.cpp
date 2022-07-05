@@ -276,7 +276,6 @@ void EventHandler::createInputEvent()
 
 void EventHandler::getLocalFiles()
 {
-    //get local files, https://stackoverflow.com/questions/306533/how-do-i-get-a-list-of-files-in-a-directory-in-c
     DIR *dir;
     class dirent *ent;
     class stat st;
@@ -284,6 +283,7 @@ void EventHandler::getLocalFiles()
     vector<File> files;
     File file;
 
+    //get local files, adapted from https://stackoverflow.com/questions/306533/how-do-i-get-a-list-of-files-in-a-directory-in-c
     dir = opendir(ARTICLE_FOLDER.c_str());
     while ((ent = readdir(dir)) != NULL)
     {
