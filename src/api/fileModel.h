@@ -3,7 +3,7 @@
 //
 // Author:           JuanJakobo
 // Date:             23.04.2021
-// Description:      
+// Description:
 //-------------------------------------------------------------------
 
 #ifndef FILEMODEL
@@ -15,11 +15,11 @@
 
 enum Type
 {
-    FOLDER,
-    FIL
+    FFOLDER,
+    FFILE
 };
 
-struct File : Entry{
+struct FileItem : Entry{
 				std::string name;
 				std::string path;
                 Type type;

@@ -50,17 +50,18 @@ list(APPEND PB_LINK_DIRECTORIES "${TOOLCHAIN_PATH}/usr/arm-obreey-linux-gnueabi/
 list(APPEND PB_INCLUDE_DIRECTORIES "${TOOLCHAIN_PATH}/usr/arm-obreey-linux-gnueabi/sysroot/usr/include")
 
 
-set(SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp 
-			${CMAKE_SOURCE_DIR}/src/handler/eventHandler.cpp 		
-			${CMAKE_SOURCE_DIR}/src/handler/mainMenu.cpp 		
-			${CMAKE_SOURCE_DIR}/src/util/log.cpp 		
-			${CMAKE_SOURCE_DIR}/src/ui/listView.cpp 		
-			${CMAKE_SOURCE_DIR}/src/ui/listViewEntry.cpp 		
+set(SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp
+			${CMAKE_SOURCE_DIR}/src/handler/eventHandler.cpp
+			${CMAKE_SOURCE_DIR}/src/handler/mainMenu.cpp
+			${CMAKE_SOURCE_DIR}/src/util/log.cpp
+			${CMAKE_SOURCE_DIR}/src/ui/listView.cpp
+			${CMAKE_SOURCE_DIR}/src/ui/listViewEntry.cpp
             ${CMAKE_SOURCE_DIR}/src/ui/textView/textView.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesView.cpp 		
-			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesViewEntry.cpp 		
+			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesView.cpp
+			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesViewEntry.cpp
 			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileView.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileViewEntry.cpp 		
+			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileViewEntry.cpp
+			${CMAKE_SOURCE_DIR}/src/api/fileBrowser.cpp
 )
 
 add_executable(Texteditor.app ${SOURCES})
@@ -72,8 +73,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/ui/textView/
     ${CMAKE_SOURCE_DIR}/src/ui/devicesView/
     ${CMAKE_SOURCE_DIR}/src/ui/fileView/
+    ${CMAKE_SOURCE_DIR}/src/api/
 )
 
-target_link_libraries(Texteditor.app PRIVATE inkview pthread freetype)
+target_link_libraries(Texteditor.app PRIVATE inkview freetype)
 
 INSTALL (TARGETS Texteditor.app)
