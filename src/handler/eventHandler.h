@@ -93,7 +93,21 @@ class EventHandler
         
         void createInputEvent();
         
-        void getLocalFiles();
+        void getLocalFiles(const std::string &path);
+
+    /**
+     * Function needed to call C function, redirects to real function
+     *
+     *  @param  text typed in by the user to the keyboard
+     */
+    static void keyboardHandlerStatic(char *text);
+
+    /**
+     *  function to handle input of user and create new file
+     *
+     *  @param  text typed in by the user to the keyboard
+     */
+    void keyboardHandler(char *text);
 
 };
 #endif

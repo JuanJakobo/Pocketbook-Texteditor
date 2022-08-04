@@ -293,53 +293,41 @@ void EventHandler::createInputEvent()
     }
 }
 
-void EventHandler::getLocalFiles()
+void EventHandler::getLocalFiles(const string &path)
 {
-    DIR *dir;
-    class dirent *ent;
-    class stat st;
 
-    vector<File> files;
-    File file;
+    FileBrowser fb = FileBrowser(true);
+    vector<FileItem> files = fb.getFileStructure(path);
 
-    //get local files, adapted from https://stackoverflow.com/questions/306533/how-do-i-get-a-list-of-files-in-a-directory-in-c
-    dir = opendir(ARTICLE_FOLDER.c_str());
-    while ((ent = readdir(dir)) != NULL)
+    //TODO add entry "add new file"
+
+
+    if (files.size() <= 0)
     {
-        const string file_name = ent->d_name;
-        const string full_file_name = ARTICLE_FOLDER + "/" + file_name;
-
-        if (file_name[0] == '.')
-            continue;
-
-        if (stat(full_file_name.c_str(), &st) == -1)
-            continue;
-
-        file.name = file_name;
-        file.path = full_file_name;
-        file.type = Type::FOLDER;
-
-        const bool is_directory = (st.st_mode & S_IFDIR) != 0;
-        if (is_directory){
-            files.push_back(file);
-            continue;
-        }
-
-        file.type = Type::FIL;
-        files.push_back(file);
-    }
-    closedir(dir);
-
-    if(files.size() <= 0)
-    {
-        FillAreaRect(_menu.getContentRect(), WHITE);
+        FillAreaRect(&_menu.getContentRect(), WHITE);
         std::ofstream output(ARTICLE_FOLDER + "/HelloWorld.txt");
         Message(ICON_INFORMATION,"Info", "No files available. Will create an new one. You can add further files to the TextEditor folder.",2000);
-        getLocalFiles();
+        getLocalFiles(ARTICLE_FOLDER);
     }
     else
     {
-        _fileView.reset(new FileView(_menu.getContentRect(),files));
+        _fileView.reset(new FileView(_menu.getContentRect(),files, 1));
         _currentView = Views::FILVIEW;
     }
+}
+
+void EventHandler::keyboardHandlerStatic(char *text)
+{
+    _eventHandlerStatic->keyboardHandler(text);
+}
+void EventHandler::keyboardHandler(char *text)
+{
+    if (!text)
+        return;
+
+    string s(text);
+    if (s.empty())
+        return;
+
+    Log::writeErrorLog(s);
 }
