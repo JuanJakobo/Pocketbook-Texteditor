@@ -24,13 +24,13 @@ using std::string;
 
 struct input_event event;
 
-TextView::TextView(const irect *contentRect, int page, Device device, const string &filePath) : _contentRect(contentRect), _shownPage(page)
+TextView::TextView(const irect &contentRect, int page, Device device, const string &filePath) : _contentRect(contentRect), _shownPage(page)
 {
     //TODO exists twice
     auto pageHeight = 0;
-    auto contentHeight = _contentRect->h - _footerHeight;
+    auto contentHeight = _contentRect.h - _footerHeight;
 
-    _footerHeight = _contentRect->h / 15;
+    _footerHeight = _contentRect.h / 15;
     _footerFontHeight = 0.3 * _footerHeight;
     _textHeight = ScreenHeight()/35;
 
@@ -40,25 +40,25 @@ TextView::TextView(const irect *contentRect, int page, Device device, const stri
     int margin = 20; //ScreenWidth()/50;
     _textBeginX = margin;
     _textEndX = ScreenWidth() - _textBeginX - margin;
-    _textBeginY = contentRect->y; //+ margin;
-    _textEndY = _contentRect->h -_footerHeight; // - margin;
+    _textBeginY = contentRect.y; //+ margin;
+    _textEndY = _contentRect.h -_footerHeight; // - margin;
 
     _footerFont = OpenFont("LiberationMono", _footerFontHeight, FONT_STD);
     _textFont = OpenFont("Roboto", _textHeight , FONT_STD);
 
 
-    _pageIcon = iRect(_contentRect->w - 100, _contentRect->h + _contentRect->y - _footerHeight, 100, _footerHeight, ALIGN_CENTER);
-    //_firstPageButton = iRect(_contentRect->x, _contentRect->h + _contentRect->y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-    //_prevPageButton = iRect(_contentRect->x + 150, _contentRect->h + _contentRect->y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-    //_nextPageButton = iRect(_contentRect->x + 300, _contentRect->h + _contentRect->y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-    //_lastPageButton = iRect(_contentRect->x + 450, _contentRect->h + _contentRect->y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
+    _pageIcon = iRect(_contentRect.w - 100, _contentRect.h + _contentRect.y - _footerHeight, 100, _footerHeight, ALIGN_CENTER);
+    //_firstPageButton = iRect(_contentRect.x, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
+    //_prevPageButton = iRect(_contentRect.x + 150, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
+    //_nextPageButton = iRect(_contentRect.x + 300, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
+    //_lastPageButton = iRect(_contentRect.x + 450, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
 
-    FillAreaRect(_contentRect, WHITE);
+    FillAreaRect(&_contentRect, WHITE);
     SetFont(_footerFont, BLACK);
     drawPageFromFile(filePath);
     loadKeyMaps();
     drawFooter();
-    PartialUpdate(_contentRect->x, _contentRect->y, _contentRect->w, _contentRect->h);
+    PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
     handleKeyEvents(device.eventID,filePath);
 
 }
@@ -74,7 +74,7 @@ int TextView::drawChar(const char &c)
     int charWidth = CharWidth(c);
 
     //in own function
-    if(_currentX + charWidth > _textEndX){
+    if (_currentX + charWidth > _textEndX){
         FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
         PartialUpdate(_currentX,_currentY, _cursorThickness,_textHeight);
         _lineCount++;
@@ -83,7 +83,7 @@ int TextView::drawChar(const char &c)
         _currentY += _textNextLineY;
     }
 
-    if(_currentY >= _textEndY)
+    if (_currentY >= _textEndY)
     {
         addPage();
         FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
@@ -102,6 +102,7 @@ int TextView::drawChar(const char &c)
 void TextView::drawPageFromFile(const string &path)
 {
 
+    //only draw last page, get lines from the end of the file to the begining?
     _currentX = _textBeginX;
     _currentY = _textBeginY;
     //TODO rename
@@ -114,9 +115,9 @@ void TextView::drawPageFromFile(const string &path)
         string line;
         bool multipleLines = false;
 
-        if(inFile.is_open()){
+        if (inFile.is_open()){
             while (getline(inFile,line)){
-                if(multipleLines){
+                if (multipleLines){
                     _lineCount++;
                     _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
                     _currentX = _textBeginX;
@@ -150,7 +151,7 @@ void TextView::loadKeyMaps()
     if (iv_access(keyBindingsPath.c_str(), W_OK) == 0){
         std::ifstream inFile(keyBindingsPath);
 
-        if(inFile.is_open()){
+        if (inFile.is_open()){
             std::string line;
             auto shift = false;
             auto altGr = false;
@@ -159,10 +160,10 @@ void TextView::loadKeyMaps()
 
             while(getline(inFile,line))
             {
-                if(line.find("shift") != std::string::npos){
+                if (line.find("shift") != std::string::npos){
                     shift = true;
                     altGr = false;
-                }else if(line.find("altgr") != std::string::npos){
+                }else if (line.find("altgr") != std::string::npos){
                     shift = false;
                     altGr = true;
                 }else{
@@ -170,9 +171,9 @@ void TextView::loadKeyMaps()
 
                     ss >> key >> value;
 
-                    if(shift)
+                    if (shift)
                         _keyBindingsShift[key] = value;
-                    else if(altGr)
+                    else if (altGr)
                         _keyBindingsAltGr[key] = value;
                     else
                         _keyBindings[key] = value;
@@ -183,7 +184,7 @@ void TextView::loadKeyMaps()
         }
     }else{
         //TODO add default keymap file
-        Message(ICON_INFORMATION,"Info", "No keymap file found. Please place a key file into /system/config/texteditor.",2000);
+        Message(ICON_INFORMATION,"Info", "No keymap file found. Please place a key file into \"/system/config/texteditor\".",2000);
     }
 }
 
@@ -191,15 +192,16 @@ void TextView::handleKeyEvents(int eventID, const string &path)
 {
     std::ifstream eventFile("/dev/input/event" + std::to_string(eventID), std::ifstream::in);
 
-    if(_currentText.empty()){
+    if (_currentText.empty())
+    {
         _currentX = _textBeginX;
         _currentY = _textBeginY;
         _lineCount = 0;
         _cursorPositionStr = 0;
     }
 
-    if(eventFile.is_open()) {
-
+    if (eventFile.is_open())
+    {
         auto shiftPressed = false;
         auto altGrPressed = false;
 
@@ -212,117 +214,162 @@ void TextView::handleKeyEvents(int eventID, const string &path)
         unsigned char key;
 
         //TODO do in thread
-        while(inputSession) {
+        while(inputSession)
+        {
             SetFont(_textFont, BLACK);
             eventFile.read(data,sizeof(event));
             memcpy(&event, data, sizeof(event));
 
-            if(event.type == EV_KEY) {
-                if(event.value == EV_KEY)
+            if (event.type == EV_KEY)
+            {
+                if (event.value == EV_KEY)
                 {
-                    if(event.code == KEY_ESC) {
-                        inputSession = false;
-                        if(!_currentText.empty()){
-                            std::ofstream text(path);
-                            text << _currentText;
-                            text.close();
-                            Message(ICON_INFORMATION,"Information", "Input Mode closed. File saved.",1000);
-                        }else{
-                            remove(path.c_str());
-                            Message(ICON_INFORMATION,"Information", "Input Mode closed. File removed.",1000);
-                        }
-                    }else if(event.code == KEY_BACKSPACE) {
-                        if(!_currentText.empty()){
-
-                            if(_currentX <= _textBeginX){
-                                if(_currentText.at(_cursorPositionStr-1) == '\n'){
-                                    _currentText.erase(_cursorPositionStr-1);
-                                    _cursorPositionStr = _currentText.size();
+                    switch (event.code)
+                    {
+                        case KEY_ESC:
+                            {
+                                inputSession = false;
+                                if (!_currentText.empty()){
+                                    std::ofstream text(path);
+                                    text << _currentText;
+                                    text.close();
+                                    Message(ICON_INFORMATION,"Information", "Input Mode closed. File saved.",1000);
+                                }else{
+                                    remove(path.c_str());
+                                    Message(ICON_INFORMATION,"Information", "Input Mode closed. File removed.",1000);
                                 }
-                                FillArea(_currentX,_currentY, _currentX+_cursorThickness,_textHeight+5, WHITE);
-                                PartialUpdate(_currentX,_currentY,_currentX+_cursorThickness,_textHeight+5);
+                                break;
+                            }
+                        case KEY_BACKSPACE:
+                            {
+                                if (!_currentText.empty()){
 
-                                _currentY -= _textNextLineY;
-                                if(_currentY < _textBeginY)
-                                    removePage();
-                                //doopelt
-                                auto it = _lineWidth.find(_lineCount);
-                                if(it != _lineWidth.end()){
-                                    _currentX = it->second;
+                                    if (_currentX <= _textBeginX){
+                                        if (_currentText.at(_cursorPositionStr-1) == '\n'){
+                                            _currentText.erase(_cursorPositionStr-1);
+                                            _cursorPositionStr = _currentText.size();
+                                        }
+                                        FillArea(_currentX,_currentY, _currentX+_cursorThickness,_textHeight+5, WHITE);
+                                        PartialUpdate(_currentX,_currentY,_currentX+_cursorThickness,_textHeight+5);
+
+                                        _currentY -= _textNextLineY;
+                                        if (_currentY < _textBeginY)
+                                            removePage();
+                                        //doopelt
+                                        auto it = _lineWidth.find(_lineCount);
+                                        if (it != _lineWidth.end()){
+                                            _currentX = it->second;
+                                        }
+                                        _lineWidth.erase(_lineCount);
+                                        _lineCount--;
+                                        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                        PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                                    }else{
+
+                                        //TODO twice
+                                        if (!_currentText.empty()){
+
+                                            int charWidth = CharWidth(_currentText.at(_cursorPositionStr-1));
+                                            _currentX -= charWidth;
+                                            _currentText.erase(_cursorPositionStr-1);
+                                            _cursorPositionStr = _currentText.size();
+
+                                            FillArea(_currentX,_currentY, charWidth+_cursorThickness,_textHeight+5, WHITE);
+                                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                            PartialUpdate(_currentX,_currentY,charWidth+_cursorThickness,_textHeight+5);
+                                        }
+                                        else
+                                        {
+                                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                            PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                                        }
+                                    }
+                                }else{
+                                    Message(ICON_INFORMATION, "Information", "no more characters to delete.", 2000);
                                 }
-                                _lineWidth.erase(_lineCount);
-                                _lineCount--;
-                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
-                            }else{
+                                break;
+                            }
+                        case KEY_TAB:
+                            break;
+                        case KEY_ENTER:
+                            {
 
-                            if(!_currentText.empty()){
 
-                                int charWidth = CharWidth(_currentText.at(_cursorPositionStr-1));
-                                _currentX -= charWidth;
-                                _currentText.erase(_cursorPositionStr-1);
+                                _lineCount++;
+                                _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
+                                _currentText += "\n";
+
+                                if ((_currentY+_textNextLineY) >= _textEndY){
+                                    _currentY += _textNextLineY;
+                                    addPage();
+                                }else{
+
+                                    FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
+                                    PartialUpdate(_currentX,_currentY, _cursorThickness,_textHeight);
+
+                                    _currentY += _textNextLineY;
+                                    _currentX = _textBeginX;
+
+                                    FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                    PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight);
+                                }
+
                                 _cursorPositionStr = _currentText.size();
 
-                                FillArea(_currentX,_currentY, charWidth+_cursorThickness,_textHeight+5, WHITE);
-                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                PartialUpdate(_currentX,_currentY,charWidth+_cursorThickness,_textHeight+5);
+                                break;
                             }
-                            else
-                            {
-                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
-                            }
-                            }
+                        case KEY_LEFTCTRL:
+                        case KEY_RIGHTCTRL:
+                            Message(1,"db","ctrl",1000);
+                            break;
+                        case KEY_LEFTALT:
+                            Message(1,"db","alt",1000);
+                            break;
+                        case KEY_RIGHTALT:
+                            altGrPressed = !altGrPressed;
+                            break;
+                        case KEY_LEFTSHIFT:
+                        case KEY_RIGHTSHIFT:
+                            shiftPressed = !shiftPressed;
+                            break;
+                        case KEY_CAPSLOCK:
+                            shiftPressed = !shiftPressed;
+                            break;
+                        case KEY_UP:
+                        case KEY_DOWN:
+                        case KEY_RIGHT:
+                        case KEY_LEFT:
+                            Message(1,"db","arrow keys",1000);
+                            break;
+                        default:
+                            break;
+                    }
+                    if (event.code == KEY_SPACE)
+                    {
+                        //TODO exists twice
+                        key = ' ';
+                        FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
+
+                        _currentText += key;
+                        int textWidth = drawChar(key);
+
+                        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                        PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
+                    }
+                    else
+                    {
+                        std::map<int,char>::iterator it;
+
+                        if (shiftPressed){
+                            it = _keyBindingsShift.find(event.code);
+                        }else if (altGrPressed){
+                            it = _keyBindingsAltGr.find(event.code);
                         }else{
-                            Message(ICON_INFORMATION, "Information", "no more characters to delete.", 2000);
+                            it = _keyBindings.find(event.code);
                         }
 
-                    }	else if(event.code == KEY_TAB){
-
-                    }else if(event.code == KEY_ENTER) {
-
-                        _lineCount++;
-                        _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
-                        _currentText += "\n";
-
-                        if((_currentY+_textNextLineY) >= _textEndY){
-                            _currentY += _textNextLineY;
-                            addPage();
-                        }else{
-
-                            FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
-                            PartialUpdate(_currentX,_currentY, _cursorThickness,_textHeight);
-
-                            _currentY += _textNextLineY;
-                            _currentX = _textBeginX;
-
-                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                            PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight);
-                        }
-
-                        _cursorPositionStr = _currentText.size();
-
-                    }else if(event.code == KEY_LEFTCTRL || event.code == KEY_RIGHTCTRL){
-                        Message(1,"db","ctrl",1000);
-                    }else if(event.code == KEY_LEFTALT){
-                        Message(1,"db","alt",1000);
-                    }else if(event.code == KEY_RIGHTALT){
-                        altGrPressed = !altGrPressed;
-                    }else if(event.code == KEY_LEFTSHIFT || event.code == KEY_RIGHTSHIFT) {
-                        shiftPressed = !shiftPressed;
-                    }else if(event.code == KEY_CAPSLOCK) {
-                        shiftPressed = !shiftPressed;
-                    }else if(event.code == KEY_UP) {
-
-                    }else if(event.code == KEY_DOWN) {
-
-                    }else if(event.code == KEY_RIGHT) {
-
-                    }else if(event.code == KEY_LEFT) {
-                    }else{
-                        if(event.code == KEY_SPACE){
-                            //TODO exists twice
-                            key = ' ';
+                        if (it != _keyBindings.end()){
+                            key = it->second;
                             FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
 
                             _currentText += key;
@@ -330,50 +377,30 @@ void TextView::handleKeyEvents(int eventID, const string &path)
 
                             FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
                             PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
-
                         }else{
-                            std::map<int,char>::iterator it;
-
-                            if(shiftPressed){
-                                it = _keyBindingsShift.find(event.code);
-                            }else if(altGrPressed){
-                                it = _keyBindingsAltGr.find(event.code);
-                            }else{
-                                it = _keyBindings.find(event.code);
-                            }
-                            if(it != _keyBindings.end()){
-                                key = it->second;
-                                FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
-
-                                _currentText += key;
-                                int textWidth = drawChar(key);
-
-                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
-                            }else{
-                                Message(1,"db",std::to_string(event.code).c_str(),1000);
-                            }
+                            //Message(1,"db",std::to_string(event.code).c_str(),1000);
                         }
-
-
                     }
 
+                }
+                else if (event.value == 0)
+                {
+                    switch (event.code)
+                    {
+                        case KEY_LEFTSHIFT:
+                            shiftPressed = !shiftPressed;
+                            break;
+                        case KEY_RIGHTALT:
+                            altGrPressed = !altGrPressed;
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 else
                 {
-                    if(event.value == 0){
-
-                        if(event.code == KEY_LEFTSHIFT) {
-                            shiftPressed = !shiftPressed;
-                        }else if(event.code == KEY_RIGHTALT){
-                            altGrPressed = !altGrPressed;
-                        }
-                    }
+                    //Log::writeInfoLog("event type " + std::to_string(event.type));
                 }
-            }
-            else 
-            {
-                //Log::writeInfoLog("event type " + std::to_string(event.type));
             }
         }
         eventFile.close();
@@ -381,7 +408,7 @@ void TextView::handleKeyEvents(int eventID, const string &path)
     else
     {
         DrawTextRect(0, (ScreenHeight() / 3) * 2, ScreenWidth(), 30, strerror(errno), ALIGN_CENTER);
-        PartialUpdate(_contentRect->x, _contentRect->y, _contentRect->w, _contentRect->h);
+        PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
     }
 
 }
@@ -410,44 +437,44 @@ void TextView::removePage()
 {
     _shownPage--;
     _page = _shownPage;
-    FillAreaRect(_contentRect, WHITE);
+    FillAreaRect(&_contentRect, WHITE);
 
     int line = _lineCount;
     _currentY = _textEndY-_textNextLineY;
 
     auto it = _lineWidth.find(line);
-    if(it != _lineWidth.end()){
+    if (it != _lineWidth.end()){
         _currentX = it->second;
         line--;
     }
 
     for(int i=_currentText.size()-1; i >= 0;--i)
     {
-        if(_currentText.at(i) == '\n'){
+        if (_currentText.at(i) == '\n'){
             //TODO doppelt
             auto it = _lineWidth.find(line);
-            if(it != _lineWidth.end()){
+            if (it != _lineWidth.end()){
                 _currentX = it->second;
                 line--;
             }
             _currentY -= _textNextLineY;
 
-            if(_currentY < (_textBeginY-_textNextLineY))
+            if (_currentY < (_textBeginY-_textNextLineY))
                 break;
         }else{
 
             int charWidth = CharWidth(_currentText.at(i));
 
-            if(_currentX -charWidth < _textBeginX){
+            if (_currentX -charWidth < _textBeginX){
                 auto it = _lineWidth.find(line);
-                if(it != _lineWidth.end()){
+                if (it != _lineWidth.end()){
                     _currentX = it->second;
                     line--;
                 }
                 _currentY -= _textNextLineY;
             }
 
-            if(_currentY < (_textBeginY-_textNextLineY))
+            if (_currentY < (_textBeginY-_textNextLineY))
                 break;
 
             SetFont(_textFont, BLACK);
@@ -462,19 +489,19 @@ void TextView::removePage()
     _cursorPositionStr = _currentText.size();
 
     drawFooter();
-    PartialUpdate(_contentRect->x, _contentRect->y, _contentRect->w, _contentRect->h);
+    PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
 }
 
 void TextView::addPage()
 {
     _shownPage++;
     _page = _shownPage;
-    FillAreaRect(_contentRect, WHITE);
+    FillAreaRect(&_contentRect, WHITE);
     _currentX = _textBeginX;
     _currentY = _textBeginY;
     //needed here?
     _cursorPositionStr = _currentText.size();
     drawFooter();
     FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-    PartialUpdate(_contentRect->x, _contentRect->y, _contentRect->w, _contentRect->h);
+    PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
 }

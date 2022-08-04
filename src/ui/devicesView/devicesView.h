@@ -26,10 +26,10 @@ public:
         * @param Items items that shall be shown in the listview
         * @param page page that is shown, default is 1
         */
-    DevicesView(const irect *contentRect, const std::vector<Device> &devices, int page = 1);
+    DevicesView(const irect &contentRect, const std::vector<Device> &devices, int page = 1);
 
-    Device *getCurrentEntry() { return getEntry(_selectedEntry); };
+    Device &getCurrentEntry() { return getEntry(_selectedEntry); };
 
-    Device *getEntry(int entryID) { return std::dynamic_pointer_cast<DevicesViewEntry>(_entries.at(entryID))->get(); };
+    Device &getEntry(int entryID) { return std::dynamic_pointer_cast<DevicesViewEntry>(_entries.at(entryID))->get(); };
 };
 #endif

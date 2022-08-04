@@ -13,7 +13,7 @@
 EventHandler *events = nullptr;
 /**
 * Handles events and redirects them
-* 
+*
 * @param type event type
 * @param par1 first argument of the event
 * @param par2 second argument of the event
@@ -23,24 +23,21 @@ int Inkview_handler(int type, int par1, int par2)
 {
     switch (type)
     {
-    case EVT_INIT:
-    {
-        events = new EventHandler();
-        return 1;
-        break;
-    }
-    case EVT_EXIT:
-    case EVT_HIDE:
-    {
-        delete events;
-        return 1;
-        break;
-    }
-    default:
-    {
-        return events->eventDistributor(type, par1, par2);
-        break;
-    }
+        case EVT_INIT:
+            {
+                events = new EventHandler();
+                return 1;
+                break;
+            }
+        case EVT_EXIT:
+        case EVT_HIDE:
+            {
+                delete events;
+                return 1;
+                break;
+            }
+        default:
+            return events->eventDistributor(type, par1, par2);
     }
     return 0;
 }

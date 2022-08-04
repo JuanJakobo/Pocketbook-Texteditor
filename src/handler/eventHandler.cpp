@@ -70,39 +70,36 @@ void EventHandler::mainMenuHandler(const int index)
     switch (index)
     {
             //start input mode
-        case 101: 
+        case 101:
             {
-                if(_currentDevice.name.empty()){
+                if (_currentDevice.name.empty()){
                     createInputEvent();
                 }else{
-                    getLocalFiles();
+                    getLocalFiles(ARTICLE_FOLDER);
                 }
                 break;
             }
             //set orientation
         case 102:
             {
+                //TODO reset variables!!
                 // Set screen orientation: 0=portrait, 1=landscape 90, 2=landscape 270, 3=portrait 180
                 // For global settings: -1=auto (g-sensor)
                 Log::writeInfoLog("turning orientation");
-                auto currentOrientation = GetOrientation();
-                Log::writeInfoLog(std::to_string(currentOrientation));
-                Message(1,"DB","Work in Progress",1000);
-                /*
-                if(currentOrientation == 0)
+                //auto currentOrientation = GetOrientation();
+                //if (currentOrientation == 0)
                     SetOrientation(1);
-                else if(currentOrientation == 1)
-                    SetOrientation(0);
+                //else if (currentOrientation == 1)
+                    //SetOrientation(0);
 
                 //void SetOrientation(int n);
                 //int GetOrientation();
-                */
                 break;
             }
             //Exit
         case 103:
             {
-                if(IsBluetoothEnabled() == 1){
+                if (IsBluetoothEnabled() == 1){
                     Message(ICON_INFORMATION,"Information","Disabling Bluetooth",2000);
                     SetBluetoothOff();
                 }
@@ -131,7 +128,7 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
                     return 1;
                 }
 
-                _currentDevice = *_devicesView->getCurrentEntry();
+                _currentDevice = _devicesView->getCurrentEntry();
 
                 std::ifstream infile("/sys" + _currentDevice.sysfs + "/event" + std::to_string(_currentDevice.eventID) + "/uevent");
                 string line;
@@ -139,19 +136,18 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
 
                 while(std::getline(infile, line))
                 {
-                    if(line.find("MAJOR") != std::string::npos)
+                    if (line.find("MAJOR") != std::string::npos)
                         major = line.substr(line.find('=')+1);
-                    if(line.find("MINOR") != std::string::npos)
+                    if (line.find("MINOR") != std::string::npos)
                         minor = line.substr(line.find('=')+1);
-                    if(line.find("DEVNAME") != std::string::npos)
+                    if (line.find("DEVNAME") != std::string::npos)
                         devname = line.substr(line.find('=')+1);
                 }
 
                 string systemCommand ="/mnt/secure/su rm /dev/input/event" + std::to_string(_currentDevice.eventID);
                 auto i = system(systemCommand.c_str());
                 systemCommand = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
-                i = system(systemCommand.c_str());
-                if(i != 0){
+                if (system(systemCommand.c_str()) != 0){
                     Message(ICON_ERROR,"Error","Could not create link to input.",2000);
                     Log::writeInfoLog("Could not create link to input. System return code " + std::to_string(i));
                     _devicesView->invertCurrentEntryColor();
@@ -159,7 +155,7 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
                 }
 
 
-                if(_currentDevice.name.empty()){
+                if (_currentDevice.name.empty()){
                     createInputEvent();
                 }else{
                     getLocalFiles(ARTICLE_FOLDER);
@@ -168,9 +164,9 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
             }
 
         }
-        else if(_currentView == Views::FILVIEW)
+        else if (_currentView == Views::FILVIEW)
         {
-            if (_fileView->checkIfEntryClicked(par1,par2))
+            if (_fileView->checkIfEntryClicked(par1, par2))
             {
                 _fileView->invertCurrentEntryColor();
 
@@ -228,13 +224,12 @@ int EventHandler::keyHandler(const int type, const int par1, const int par2)
 
 void EventHandler::createInputEvent()
 {
- 
-    if(IsBluetoothEnabled() == 0)
+    if (IsBluetoothEnabled() == 0)
         SetBluetoothOn();
-    if(IsBluetoothAwake() == 0)
+    if (IsBluetoothAwake() == 0)
         BluetoothWakeUp();
 
-    if(IsBluetoothEnabled() == 1){
+    if (IsBluetoothEnabled() == 1){
         std::ifstream infile("/proc/bus/input/devices");
         string line;
 
@@ -243,46 +238,54 @@ void EventHandler::createInputEvent()
 
         while(std::getline(infile, line))
         {
-            if(line.front() == 'N')
+            //TODO test
+            switch (line.front())
+            {
+                case 'N':
                 temp.name = line.substr(line.find('=')+1);
-            if(line.front() == 'S')
+                break;
+                case 'S':
                 temp.sysfs = line.substr(line.find('=')+1);
-            if(line.front() == 'U'){
+                break;
+                case 'U':
                 temp.uniq = line.substr(line.find('=')+1);
-            }
-            if(line.front() == 'H'){
+                break;
+                case 'H':
+                {
                 string handlers =line.substr(line.find('=')+1);
                 int t = handlers.find("event");
-                if(t != std::string::npos){
+                if (t != std::string::npos){
                     handlers = handlers.substr(t);
                     handlers = handlers.substr(5,1);
-                    temp.eventID = std::stoi(handlers);				
+                    temp.eventID = std::stoi(handlers);
+                }
+                break;
                 }
             }
             //TODO filter by type
-            //B: --> EV 
+            //B: --> EV
             //B: --> KEY
-            else if(line.empty() && !temp.name.empty() && temp.eventID > 6){
+            if (line.empty() && !temp.name.empty() && temp.eventID > 6){
                 devices.push_back(temp);
                 temp = {};
             }
         }
 
         //write devices to list
-        if(devices.size() > 0){
+        if (devices.size() > 0){
             _devicesView.reset(new DevicesView(_menu.getContentRect(),devices,1));
             _devicesView->draw();
             _currentView = Views::DEVICEVIEW;
         }else{
             //TODO set font
-            FillAreaRect(_menu.getContentRect(), WHITE);
+            FillAreaRect(&_menu.getContentRect(), WHITE);
             auto textHeight = ScreenHeight() / 45;
             auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
             SetFont(startscreenFont, BLACK);
-            DrawTextRect2(_menu.getContentRect(), "No bluetooth keyboards available. Please pair a new one using bluetoothctl");
+            DrawTextRect2(&_menu.getContentRect(), "No bluetooth keyboards available. Please pair a new one using bluetoothctl");
             CloseFont(startscreenFont);
             _currentView = Views::DEFAULTVIEW;
-            PartialUpdate(_menu.getContentRect()->x, _menu.getContentRect()->y, _menu.getContentRect()->w, _menu.getContentRect()->h);
+            PartialUpdate(_menu.getContentRect().x, _menu.getContentRect().y, _menu.getContentRect().w, _menu.getContentRect().h);
         }
 
     }else{

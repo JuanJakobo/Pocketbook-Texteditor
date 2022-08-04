@@ -25,7 +25,7 @@ public:
 
     ~MainMenu();
 
-    irect *getContentRect() { return &_contentRect; };
+    irect &getContentRect() { return _contentRect; };
 
     /**
         * Shows the menu on the screen, lets the user choose menu options and then redirects the handler to the caller

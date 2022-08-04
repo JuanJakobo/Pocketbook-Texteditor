@@ -15,7 +15,7 @@
 #include <string>
 #include <map>
 
-class TextView
+class TextView //: public View
 {
 public:
 
@@ -25,10 +25,11 @@ public:
         * @param ContentRect area of the screen where the list view is placed
         * @param Items items that shall be shown in the listview
         */
-    TextView(const irect *contentRect, int page, Device device, const std::string &filePath);
+    TextView(const irect &contentRect, int page, Device device, const std::string &filePath);
 
     ~TextView();
 
+    //TODO need one class above that has these called View
     int getShownPage(){return _shownPage;};
 
     /**
@@ -80,7 +81,7 @@ private:
     int _textHeight;
     int _footerHeight;
     int _footerFontHeight;
-    const irect *_contentRect;
+    const irect _contentRect;
     ifont *_footerFont;
     ifont *_textFont;
     int _page = 1;

@@ -33,7 +33,7 @@ public:
         */
     void draw(const ifont *entryFont, const ifont *entryFontBold, int fontHeight) override;
 
-    Device *get() override { return &_entry; };
+    Device &get() { return _entry; };
 
 private:
     Device _entry;
