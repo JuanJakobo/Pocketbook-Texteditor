@@ -21,6 +21,9 @@
 
 #include "textView.h"
 
+#include "fileBrowser.h"
+#include "fileModel.h"
+
 #include <string>
 #include <fstream>
 
@@ -159,7 +162,7 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
                 if(_currentDevice.name.empty()){
                     createInputEvent();
                 }else{
-                    getLocalFiles();
+                    getLocalFiles(ARTICLE_FOLDER);
                 }
 
             }
@@ -170,14 +173,27 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
             if (_fileView->checkIfEntryClicked(par1,par2))
             {
                 _fileView->invertCurrentEntryColor();
-                if(_fileView->getCurrentEntry()->type == Type::FIL){
-                    _currentView = Views::TXVIEW;
-                    TextView text = TextView(_menu.getContentRect(),1, _currentDevice,_fileView->getCurrentEntry()->path);
+
+                if (_fileView->getCurrentEntry().type == Type::FFOLDER)
+                {
+                    //TODO just once? and in getLocalFiles?
+                    FileBrowser fileBrowser = FileBrowser(true);
+                    vector<FileItem> currentFolder = fileBrowser.getFileStructure(_fileView->getCurrentEntry().path);
+
+                    _fileView.reset(new FileView(_menu.getContentRect(), currentFolder,1));
                 }
                 else
                 {
-                    Message(ICON_INFORMATION,"Info","Folder",1000);
-                    _fileView->invertCurrentEntryColor();
+                    _currentView = Views::TXVIEW;
+                    TextView text = TextView(_menu.getContentRect(),1, _currentDevice,_fileView->getCurrentEntry().path);
+
+                }
+                //TODO add new file
+                if (false)
+                {
+                    string _temp = "Filename";
+                    _temp.resize(60);
+                    OpenKeyboard(_temp.c_str(), &_temp[0], 60 - 1, KBD_NORMAL, &keyboardHandlerStatic);
                 }
 
             }
