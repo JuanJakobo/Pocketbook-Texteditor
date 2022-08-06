@@ -216,6 +216,8 @@ void TextView::handleKeyEvents(int eventID, const string &path)
         //TODO do in thread
         while(inputSession)
         {
+            //TODO just empty?
+            key = 0;
             SetFont(_textFont, BLACK);
             eventFile.read(data,sizeof(event));
             memcpy(&event, data, sizeof(event));
@@ -341,13 +343,28 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                         case KEY_LEFT:
                             Message(1,"db","arrow keys",1000);
                             break;
-                        default:
+                        case KEY_SPACE:
+                            key = ' ';
                             break;
+                        default:
+                            {
+                                std::map<int,char>::iterator it;
+                                if (shiftPressed){
+                                    it = _keyBindingsShift.find(event.code);
+                                }else if (altGrPressed){
+                                    it = _keyBindingsAltGr.find(event.code);
+                                }else{
+                                    it = _keyBindings.find(event.code);
+                                }
+                                key = it->second;
+
+                                break;
+                            }
                     }
-                    if (event.code == KEY_SPACE)
+                    //if (it != _keyBindings.end() || event.code == KEY_SPACE){
+                    if(key != 0)
                     {
-                        //TODO exists twice
-                        key = ' ';
+                        Log::writeInfoLog("eventcode " + std::to_string(event.code) + " key " + std::to_string(key));
                         FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
 
                         _currentText += key;
@@ -355,63 +372,39 @@ void TextView::handleKeyEvents(int eventID, const string &path)
 
                         FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
                         PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
+                    }else{
+                        //Message(1,"db",std::to_string(event.code).c_str(),1000);
+                    }
+                }
+                    else if (event.value == 0)
+                    {
+                        switch (event.code)
+                        {
+                            case KEY_LEFTSHIFT:
+                                shiftPressed = !shiftPressed;
+                                break;
+                            case KEY_RIGHTALT:
+                                altGrPressed = !altGrPressed;
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     else
                     {
-                        std::map<int,char>::iterator it;
-
-                        if (shiftPressed){
-                            it = _keyBindingsShift.find(event.code);
-                        }else if (altGrPressed){
-                            it = _keyBindingsAltGr.find(event.code);
-                        }else{
-                            it = _keyBindings.find(event.code);
-                        }
-
-                        if (it != _keyBindings.end()){
-                            key = it->second;
-                            FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
-
-                            _currentText += key;
-                            int textWidth = drawChar(key);
-
-                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                            PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
-                        }else{
-                            //Message(1,"db",std::to_string(event.code).c_str(),1000);
-                        }
+                        //Log::writeInfoLog("event type " + std::to_string(event.type));
                     }
-
-                }
-                else if (event.value == 0)
-                {
-                    switch (event.code)
-                    {
-                        case KEY_LEFTSHIFT:
-                            shiftPressed = !shiftPressed;
-                            break;
-                        case KEY_RIGHTALT:
-                            altGrPressed = !altGrPressed;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    //Log::writeInfoLog("event type " + std::to_string(event.type));
                 }
             }
+            eventFile.close();
         }
-        eventFile.close();
-    }
-    else
-    {
-        DrawTextRect(0, (ScreenHeight() / 3) * 2, ScreenWidth(), 30, strerror(errno), ALIGN_CENTER);
-        PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
-    }
+        else
+        {
+            DrawTextRect(0, (ScreenHeight() / 3) * 2, ScreenWidth(), 30, strerror(errno), ALIGN_CENTER);
+            PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
+        }
 
-}
+    }
 
 void TextView::drawFooter()
 {
