@@ -115,54 +115,22 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
 {
     if (type == EVT_POINTERUP)
     {
+        //TODO switch view
         if (_currentView == Views::DEVICEVIEW)
         {
             if (_devicesView->checkIfEntryClicked(par1,par2))
             {
                 _devicesView->invertCurrentEntryColor();
-
-                if (iv_access("mnt/secure/su", R_OK) != 0){
-                    Message(ICON_ERROR,"Error","No root access available.",2000);
-                    Log::writeInfoLog("no root access");
-                    _devicesView->invertCurrentEntryColor();
-                    return 1;
-                }
-
-                _currentDevice = _devicesView->getCurrentEntry();
-
-                std::ifstream infile("/sys" + _currentDevice.sysfs + "/event" + std::to_string(_currentDevice.eventID) + "/uevent");
-                string line;
-                string major, minor, devname;
-
-                while(std::getline(infile, line))
+                if (createDevice(_devicesView->getCurrentEntry()))
                 {
-                    if (line.find("MAJOR") != std::string::npos)
-                        major = line.substr(line.find('=')+1);
-                    if (line.find("MINOR") != std::string::npos)
-                        minor = line.substr(line.find('=')+1);
-                    if (line.find("DEVNAME") != std::string::npos)
-                        devname = line.substr(line.find('=')+1);
-                }
-
-                string systemCommand ="/mnt/secure/su rm /dev/input/event" + std::to_string(_currentDevice.eventID);
-                auto i = system(systemCommand.c_str());
-                systemCommand = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
-                if (system(systemCommand.c_str()) != 0){
-                    Message(ICON_ERROR,"Error","Could not create link to input.",2000);
-                    Log::writeInfoLog("Could not create link to input. System return code " + std::to_string(i));
-                    _devicesView->invertCurrentEntryColor();
-                    return 1;
-                }
-
-
-                if (_currentDevice.name.empty()){
-                    createInputEvent();
-                }else{
                     getLocalFiles(ARTICLE_FOLDER);
                 }
-
+                else
+                {
+                    _devicesView->invertCurrentEntryColor();
+                    return 1;
+                }
             }
-
         }
         else if (_currentView == Views::FILVIEW)
         {
@@ -271,26 +239,79 @@ void EventHandler::createInputEvent()
             }
         }
 
-        //write devices to list
-        if (devices.size() > 0){
-            _devicesView.reset(new DevicesView(_menu.getContentRect(),devices,1));
-            _devicesView->draw();
-            _currentView = Views::DEVICEVIEW;
-        }else{
-            //TODO set font
-            FillAreaRect(&_menu.getContentRect(), WHITE);
-            auto textHeight = ScreenHeight() / 45;
-            auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
-            SetFont(startscreenFont, BLACK);
-            DrawTextRect2(&_menu.getContentRect(), "No bluetooth keyboards available. Please pair a new one using bluetoothctl");
-            CloseFont(startscreenFont);
-            _currentView = Views::DEFAULTVIEW;
-            PartialUpdate(_menu.getContentRect().x, _menu.getContentRect().y, _menu.getContentRect().w, _menu.getContentRect().h);
+        //TODO test
+        switch (devices.size())
+        {
+            case 1:
+                if(createDevice(devices.at(0)))
+                {
+                    getLocalFiles(ARTICLE_FOLDER);
+                    break;
+                }
+            case 2 ... INT_MAX :
+                {
+                    _devicesView.reset(new DevicesView(_menu.getContentRect(),devices,1));
+                    _devicesView->draw();
+                    _currentView = Views::DEVICEVIEW;
+                    break;
+                }
+            default:
+                {
+                    FillAreaRect(&_menu.getContentRect(), WHITE);
+                    auto textHeight = ScreenHeight() / 45;
+                    auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
+                    SetFont(startscreenFont, BLACK);
+                    DrawTextRect2(&_menu.getContentRect(), "No bluetooth keyboards available. Please pair a new one using bluetoothctl");
+                    CloseFont(startscreenFont);
+                    _currentView = Views::DEFAULTVIEW;
+                    PartialUpdate(_menu.getContentRect().x, _menu.getContentRect().y, _menu.getContentRect().w, _menu.getContentRect().h);
+                }
         }
 
     }else{
-        Message(ICON_ERROR,"Error", "Could not enable Bluetooth",2000); 
+        Message(ICON_ERROR,"Error", "Could not enable Bluetooth",2000);
     }
+}
+
+bool EventHandler::createDevice(const Device &device)
+{
+                _currentDevice = device;
+                if (_currentDevice.name.empty())
+                    createInputEvent();
+
+                if (iv_access("mnt/secure/su", R_OK) != 0)
+                {
+                    Message(ICON_ERROR,"Error","No root access available.",2000);
+                    Log::writeInfoLog("no root access");
+                    return false;
+                }
+
+                std::ifstream infile("/sys" + _currentDevice.sysfs + "/event" + std::to_string(_currentDevice.eventID) + "/uevent");
+                string line;
+                string major, minor, devname;
+
+                while(std::getline(infile, line))
+                {
+                    if (line.find("MAJOR") != std::string::npos)
+                        major = line.substr(line.find('=')+1);
+                    if (line.find("MINOR") != std::string::npos)
+                        minor = line.substr(line.find('=')+1);
+                    if (line.find("DEVNAME") != std::string::npos)
+                        devname = line.substr(line.find('=')+1);
+                }
+
+                string systemCommand ="/mnt/secure/su rm /dev/input/event" + std::to_string(_currentDevice.eventID);
+                auto i = system(systemCommand.c_str());
+                systemCommand = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
+                if (system(systemCommand.c_str()) != 0)
+                {
+                    Message(ICON_ERROR,"Error","Could not create link to input.",2000);
+                    Log::writeInfoLog("Could not create link to input. System return code " + std::to_string(i));
+                    return false;
+                }
+
+                return true;
+
 }
 
 void EventHandler::getLocalFiles(const string &path)
@@ -299,9 +320,10 @@ void EventHandler::getLocalFiles(const string &path)
     FileBrowser fb = FileBrowser(true);
     vector<FileItem> files = fb.getFileStructure(path);
 
+
+
     //TODO add entry "add new file"
-
-
+    /*
     if (files.size() <= 0)
     {
         FillAreaRect(&_menu.getContentRect(), WHITE);
@@ -311,9 +333,9 @@ void EventHandler::getLocalFiles(const string &path)
     }
     else
     {
+    */
         _fileView.reset(new FileView(_menu.getContentRect(),files, 1));
         _currentView = Views::FILVIEW;
-    }
 }
 
 void EventHandler::keyboardHandlerStatic(char *text)

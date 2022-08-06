@@ -90,9 +90,11 @@ class EventHandler
         int pointerHandler(const int type, const int par1, const int par2);
 
         int keyHandler(const int type, const int par1, const int par2);
-        
+
+        bool createDevice(const Device &device);
+
         void createInputEvent();
-        
+
         void getLocalFiles(const std::string &path);
 
     /**
