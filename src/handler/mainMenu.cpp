@@ -6,7 +6,6 @@
 //
 //-------------------------------------------------------------------
 
-#include "inkview.h"
 #include "mainMenu.h"
 
 #include <string>
@@ -22,21 +21,23 @@ MainMenu::MainMenu(const string &name)
 }
 
 MainMenu::~MainMenu()
-{  
+{
     free(_menu);
     free(_open);
     free(_orientation);
+    free(_createFile);
     free(_exit);
 }
 
-int MainMenu::createMenu(const iv_menuhandler &handler)
+int MainMenu::createMenu(const iv_menuhandler &handler, Views currentView)
 {
     imenu mainMenu[] =
         {
             {ITEM_HEADER, 0, _menu, NULL},
             {ITEM_ACTIVE, 101, _open, NULL},
             {ITEM_ACTIVE, 102, _orientation, NULL},
-            {ITEM_ACTIVE, 103, _exit, NULL},
+            {currentView == Views::FIL ? (short)ITEM_ACTIVE : (short)ITEM_HIDDEN, 103, _createFile, NULL},
+            {ITEM_ACTIVE, 104, _exit, NULL},
             {0, 0, NULL, NULL}};
 
     auto a = GetMenuRect(mainMenu);

@@ -33,7 +33,7 @@ public:
         * 
         * @return int returns if the event was handled
         */
-    int createMenu(const iv_menuhandler &handler);
+    int createMenu(const iv_menuhandler &handler, Views currentView);
 
 private:
     imenu _mainMenu;
@@ -41,8 +41,9 @@ private:
     irect _contentRectVertical;
 
     char *_menu = strdup("Menu");
-    char *_open = strdup("Open editor");
+    char *_open = strdup("Start input mode");
     char *_orientation = strdup("Change orientation");
+    char *_createFile = strdup("Create file");
     char *_exit = strdup("Close App");
 };
 #endif

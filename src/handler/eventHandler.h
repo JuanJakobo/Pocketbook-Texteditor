@@ -61,9 +61,8 @@ class EventHandler
         std::unique_ptr<FileView> _fileView;
         Views _currentView;
         Device _currentDevice;
-
-
-        int drawChar(const char &c);
+        std::string _currentPath;
+        std::string _tempKeyboard;
 
         /**
          * Function needed to call C function, redirects to real function

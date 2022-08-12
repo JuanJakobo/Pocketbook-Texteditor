@@ -103,8 +103,19 @@ void EventHandler::mainMenuHandler(const int index)
                 Message(ICON_INFORMATION,"Error", "Open menu and select what to do",3000);
                 break;
             }
-            //Exit
+            //create File
         case 103:
+            {
+                _tempKeyboard = "Filename";
+                _tempKeyboard.resize(60);
+                if (iv_access(_currentPath.c_str(), W_OK) == 0)
+                    OpenKeyboard(_tempKeyboard.c_str(), &_tempKeyboard[0], 60 - 1, KBD_NORMAL, &keyboardHandlerStatic);
+                else
+                    Message(ICON_INFORMATION,"Error", "Can not write to current location",2000);
+                break;
+            }
+            //Exit
+        case 104:
             {
                 if (IsBluetoothEnabled() == 1){
                     Message(ICON_INFORMATION,"Information","Disabling Bluetooth",2000);
@@ -180,7 +191,7 @@ int EventHandler::keyHandler(const int type, const int par1, const int par2)
     {
         if (par1 == 23)
         {
-            return _menu.createMenu(EventHandler::mainMenuHandlerStatic);
+            return _menu.createMenu(EventHandler::mainMenuHandlerStatic, _currentView);
         }
         //left button -> pre page
         else if (par1 == 24)
@@ -354,9 +365,11 @@ void EventHandler::keyboardHandler(char *text)
     if (!text)
         return;
 
-    string s(text);
-    if (s.empty())
+    string path(text);
+    if (path.empty())
         return;
 
-    Log::writeErrorLog(s);
+    path = _currentPath + '/' + path;
+    std::ofstream output(path);
+    getLocalFiles(_currentPath);
 }
