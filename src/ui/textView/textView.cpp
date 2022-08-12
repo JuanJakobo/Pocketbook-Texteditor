@@ -1,5 +1,3 @@
-//------------------------------------------------------------------
-// textView.cpp
 //
 // Author:           JuanJakobo
 // Date:             16.09.2021
@@ -24,49 +22,77 @@ using std::string;
 
 struct input_event event;
 
-TextView::TextView(const irect &contentRect, int page, Device device, const string &filePath) : _contentRect(contentRect), _shownPage(page)
+TextView::TextView(const irect &contentRect, int shownPage, Device device, const string &filePath) : View(contentRect,shownPage), _filePath(filePath)
 {
-    //TODO exists twice
-    auto pageHeight = 0;
-    auto contentHeight = _contentRect.h - _footerHeight;
-
-    _footerHeight = _contentRect.h / 15;
-    _footerFontHeight = 0.3 * _footerHeight;
-    _textHeight = ScreenHeight()/35;
-
-    _cursorThickness = 4;
+    _textHeight = _contentRect.h/35; // (GetOrientation() == 1 || GetOrientation() == 3) ? ScreenHeight()/35 : ScreenWidth()/35;
 
     _textNextLineY = _textHeight + 10;
     int margin = 20; //ScreenWidth()/50;
     _textBeginX = margin;
-    _textEndX = ScreenWidth() - _textBeginX - margin;
+    //_textEndX = ScreenWidth() - _textBeginX - margin;
+    _textEndX = _contentRect.w - _textBeginX - margin;
     _textBeginY = contentRect.y; //+ margin;
-    _textEndY = _contentRect.h -_footerHeight; // - margin;
+    _textEndY = _contentRect.h -_footerHeight - _textHeight; // - margin;
 
-    _footerFont = OpenFont("LiberationMono", _footerFontHeight, FONT_STD);
     _textFont = OpenFont("Roboto", _textHeight , FONT_STD);
 
-
-    _pageIcon = iRect(_contentRect.w - 100, _contentRect.h + _contentRect.y - _footerHeight, 100, _footerHeight, ALIGN_CENTER);
-    //_firstPageButton = iRect(_contentRect.x, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-    //_prevPageButton = iRect(_contentRect.x + 150, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-    //_nextPageButton = iRect(_contentRect.x + 300, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-    //_lastPageButton = iRect(_contentRect.x + 450, _contentRect.h + _contentRect.y - _footerHeight, 130, _footerHeight, ALIGN_CENTER);
-
-    FillAreaRect(&_contentRect, WHITE);
-    SetFont(_footerFont, BLACK);
-    drawPageFromFile(filePath);
-    loadKeyMaps();
-    drawFooter();
-    PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
+    draw();
     handleKeyEvents(device.eventID,filePath);
-
 }
 
 TextView::~TextView()
 {
     CloseFont(_textFont);
-    CloseFont(_footerFont);
+    //free(_textFont);
+}
+bool TextView::checkIfEntryClicked(int x, int y)
+{
+    return false;
+}
+
+void TextView::draw()
+{
+    FillAreaRect(&_contentRect, WHITE);
+    //only draw last page, get lines from the end of the file to the begining?
+    _currentX = _textBeginX;
+    _currentY = _textBeginY;
+    _lineCount = 0;
+    _currentText.clear();
+
+    SetFont(_textFont, BLACK);
+    if (iv_access(_filePath.c_str(), W_OK) == 0){
+        std::ifstream inFile(_filePath);
+        string line;
+        bool multipleLines = false;
+
+        if (inFile.is_open()){
+            while (getline(inFile,line)){
+                if (multipleLines){
+                    _lineCount++;
+                    _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
+                    _currentX = _textBeginX;
+                    _currentY += _textNextLineY;
+                    _currentText += "\n";
+                }
+
+                for(const char &c : line)
+                {
+                    multipleLines = true;
+                    _currentText += c;
+                    // TODO does not have to draw all pages
+                    drawChar(c);
+                }
+
+            }
+            inFile.close();
+        }
+        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+        PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
+    }
+    else
+    {
+        Message(ICON_ERROR,"Error","File not found.",1000);
+    }
 }
 
 int TextView::drawChar(const char &c)
@@ -97,51 +123,6 @@ int TextView::drawChar(const char &c)
 
     return charWidth;
 
-}
-
-void TextView::drawPageFromFile(const string &path)
-{
-
-    //only draw last page, get lines from the end of the file to the begining?
-    _currentX = _textBeginX;
-    _currentY = _textBeginY;
-    //TODO rename
-    _lineCount = 0;
-    _currentText.clear();
-
-    SetFont(_textFont, BLACK);
-    if (iv_access(path.c_str(), W_OK) == 0){
-        std::ifstream inFile(path);
-        string line;
-        bool multipleLines = false;
-
-        if (inFile.is_open()){
-            while (getline(inFile,line)){
-                if (multipleLines){
-                    _lineCount++;
-                    _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
-                    _currentX = _textBeginX;
-                    _currentY += _textNextLineY;
-                    _currentText += "\n";
-                }
-
-                for(const char &c : line)
-                {
-                    multipleLines = true;
-                    _currentText += c;
-                    // TODO does not have to draw all pages
-                    drawChar(c);
-                }
-
-            }
-            inFile.close();
-        }
-        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-    }
-    else
-    {
-        Message(ICON_ERROR,"Error","File not found.",1000);
-    }
 }
 
 void TextView::loadKeyMaps()
@@ -183,13 +164,13 @@ void TextView::loadKeyMaps()
             inFile.close();
         }
     }else{
-        //TODO add default keymap file
         Message(ICON_INFORMATION,"Info", "No keymap file found. Please place a key file into \"/system/config/texteditor\".",2000);
     }
 }
 
 void TextView::handleKeyEvents(int eventID, const string &path)
 {
+    loadKeyMaps();
     std::ifstream eventFile("/dev/input/event" + std::to_string(eventID), std::ifstream::in);
 
     if (_currentText.empty())
@@ -216,7 +197,6 @@ void TextView::handleKeyEvents(int eventID, const string &path)
         //TODO do in thread
         while(inputSession)
         {
-            //TODO just empty?
             key = 0;
             SetFont(_textFont, BLACK);
             eventFile.read(data,sizeof(event));
@@ -287,7 +267,7 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                                         }
                                     }
                                 }else{
-                                    Message(ICON_INFORMATION, "Information", "no more characters to delete.", 2000);
+                                    Message(ICON_INFORMATION, "Information", "No more characters to delete.", 2000);
                                 }
                                 break;
                             }
@@ -295,8 +275,6 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                             break;
                         case KEY_ENTER:
                             {
-
-
                                 _lineCount++;
                                 _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
                                 _currentText += "\n";
@@ -361,7 +339,6 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                                 break;
                             }
                     }
-                    //if (it != _keyBindings.end() || event.code == KEY_SPACE){
                     if(key != 0)
                     {
                         Log::writeInfoLog("eventcode " + std::to_string(event.code) + " key " + std::to_string(key));
@@ -376,53 +353,30 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                         //Message(1,"db",std::to_string(event.code).c_str(),1000);
                     }
                 }
-                    else if (event.value == 0)
+                else if (event.value == 0)
+                {
+                    switch (event.code)
                     {
-                        switch (event.code)
-                        {
-                            case KEY_LEFTSHIFT:
-                                shiftPressed = !shiftPressed;
-                                break;
-                            case KEY_RIGHTALT:
-                                altGrPressed = !altGrPressed;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        //Log::writeInfoLog("event type " + std::to_string(event.type));
+                        case KEY_LEFTSHIFT:
+                            shiftPressed = !shiftPressed;
+                            break;
+                        case KEY_RIGHTALT:
+                            altGrPressed = !altGrPressed;
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
-            eventFile.close();
         }
-        else
-        {
-            DrawTextRect(0, (ScreenHeight() / 3) * 2, ScreenWidth(), 30, strerror(errno), ALIGN_CENTER);
-            PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
-        }
-
+        eventFile.close();
+    }
+    else
+    {
+        DrawTextRect(0, (_contentRect.h / 3) * 2, _contentRect.w, 30, strerror(errno), ALIGN_CENTER);
+        PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
     }
 
-void TextView::drawFooter()
-{
-    //DrawTextRect(_currentX,_currentY,200,_textHeight,"HALLO",ALIGN_CENTER);
-
-    SetFont(_footerFont, WHITE);
-    string footer = std::to_string(_shownPage) + "/" + std::to_string(_page);
-    FillAreaRect(&_pageIcon, BLACK);
-
-    DrawTextRect2(&_pageIcon, footer.c_str());
-    //FillAreaRect(&_firstPageButton, BLACK);
-    //DrawTextRect2(&_firstPageButton, "First");
-    //FillAreaRect(&_prevPageButton, BLACK);
-    //DrawTextRect2(&_prevPageButton, "Prev");
-    //FillAreaRect(&_nextPageButton, BLACK);
-    //DrawTextRect2(&_nextPageButton, "Next");
-    //FillAreaRect(&_lastPageButton, BLACK);
-    //DrawTextRect2(&_lastPageButton, "Last");
 }
 
 

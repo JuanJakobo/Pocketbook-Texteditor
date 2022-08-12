@@ -26,10 +26,13 @@ public:
         * @param Items items that shall be shown in the listview
         * @param page page that is shown, default is 1
         */
-    FileView(const irect &contentRect, const std::vector<FileItem> &files, int page = 1);
+    FileView(const irect &contentRect, const std::vector<FileItem> &files, int shownPage = 1);
 
     FileItem &getCurrentEntry() { return getEntry(_selectedEntry); };
 
     FileItem &getEntry(int entryID) { return std::dynamic_pointer_cast<FileViewEntry>(_entries.at(entryID))->get(); };
+
+private:
+    void setViewAsCurrent() override { _currentView = Views::FIL;};
 };
 #endif

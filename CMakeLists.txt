@@ -54,6 +54,7 @@ set(SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp
 			${CMAKE_SOURCE_DIR}/src/handler/eventHandler.cpp
 			${CMAKE_SOURCE_DIR}/src/handler/mainMenu.cpp
 			${CMAKE_SOURCE_DIR}/src/util/log.cpp
+			${CMAKE_SOURCE_DIR}/src/ui/view.cpp
 			${CMAKE_SOURCE_DIR}/src/ui/listView.cpp
 			${CMAKE_SOURCE_DIR}/src/ui/listViewEntry.cpp
             ${CMAKE_SOURCE_DIR}/src/ui/textView/textView.cpp

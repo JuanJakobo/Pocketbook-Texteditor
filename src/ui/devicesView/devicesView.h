@@ -20,16 +20,20 @@ class DevicesView final : public ListView
 {
 public:
     /**
-        * Displays a list view 
-        * 
+        * Displays a list view
+        *
         * @param ContentRect area of the screen where the list view is placed
         * @param Items items that shall be shown in the listview
         * @param page page that is shown, default is 1
         */
-    DevicesView(const irect &contentRect, const std::vector<Device> &devices, int page = 1);
+    DevicesView(const irect &contentRect, const std::vector<Device> &devices, int shownPage = 1);
+
 
     Device &getCurrentEntry() { return getEntry(_selectedEntry); };
 
     Device &getEntry(int entryID) { return std::dynamic_pointer_cast<DevicesViewEntry>(_entries.at(entryID))->get(); };
+
+private:
+    void setViewAsCurrent() override { _currentView = Views::DEVICE;};
 };
 #endif

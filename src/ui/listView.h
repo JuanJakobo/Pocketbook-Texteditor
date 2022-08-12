@@ -17,7 +17,7 @@
 #include <vector>
 #include <memory>
 
-class ListView //: public View
+class ListView : public View
 {
 public:
     /**
@@ -26,26 +26,9 @@ public:
         * @param ContentRect area of the screen where the list view is placed
         * @param Items items that shall be shown in the listview
         */
-    ListView(const irect &contentRect, int page);
+    ListView(const irect &contentRect, int shownPage);
 
     virtual ~ListView();
-
-    int getShownPage(){return _shownPage;};
-
-    /**
-        * Navigates to the next page
-        */
-    void nextPage() { this->actualizePage(_shownPage + 1); };
-
-    /**
-        * Navigates to the prev page
-        */
-    void prevPage() { this->actualizePage(_shownPage - 1); };
-
-    /**
-        * Navigates to first page
-        */
-    void firstPage() { this->actualizePage(1); };
 
     /**
         * Draws an single entry to the screen
@@ -64,7 +47,7 @@ public:
         * @param y y-coordinate
         * @return true if was clicked
         */
-    bool checkIfEntryClicked(int x, int y);
+    bool checkIfEntryClicked(int x, int y) override;
 
     int getCurrentEntryItertator() const {return _selectedEntry;};
 
@@ -72,24 +55,14 @@ public:
         * Clears the screen and draws entries and footer
         *
         */
-    void draw();
+    void draw() override;
+
 
 protected:
-    int _footerHeight;
-    int _footerFontHeight;
     int _entryFontHeight;
-    const irect _contentRect;
-    std::vector<std::shared_ptr<ListViewEntry>> _entries;
-    ifont *_footerFont;
     ifont *_entryFont;
     ifont *_entryFontBold;
-    int _page = 1;
-    int _shownPage;
-    irect _pageIcon;
-    irect _nextPageButton;
-    irect _prevPageButton;
-    irect _firstPageButton;
-    irect _lastPageButton;
+    std::vector<std::shared_ptr<ListViewEntry>> _entries;
     int _selectedEntry;
 
 
@@ -99,22 +72,11 @@ protected:
     void drawEntries();
 
     /**
-        * Draws the footer including a page changer
-        */
-    void drawFooter();
-
-    /**
         * updates an entry
         *
         * @param entryID the id of the item that shall be inverted
         */
     void updateEntry(int entryID);
 
-    /**
-        * Navigates to the selected page
-        *
-        * @param pageToShow page that shall be shown
-        */
-    void actualizePage(int pageToShow);
 };
 #endif
