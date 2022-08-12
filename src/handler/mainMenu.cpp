@@ -17,7 +17,8 @@ MainMenu::MainMenu(const string &name)
 {
     //hide Panel
     SetPanelType(0);
-    _contentRect = iRect(0, 0, ScreenWidth(), ScreenHeight(), 0);
+    _contentRectHorizontal = iRect(0, 0, ScreenWidth(), ScreenHeight(), 0);
+    _contentRectVertical = iRect(0, 0, ScreenHeight(), ScreenWidth(), 0);
 }
 
 MainMenu::~MainMenu()

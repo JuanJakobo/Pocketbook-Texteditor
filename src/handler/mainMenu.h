@@ -10,6 +10,7 @@
 #define MAIN_MENU
 
 #include "inkview.h"
+#include "view.h"
 
 #include <string>
 
@@ -25,7 +26,7 @@ public:
 
     ~MainMenu();
 
-    irect &getContentRect() { return _contentRect; };
+    irect &getContentRect() { return (GetOrientation() == 0 || GetOrientation() == 3) ? _contentRectHorizontal : _contentRectVertical; };
 
     /**
         * Shows the menu on the screen, lets the user choose menu options and then redirects the handler to the caller
@@ -36,7 +37,8 @@ public:
 
 private:
     imenu _mainMenu;
-    irect _contentRect;
+    irect _contentRectHorizontal;
+    irect _contentRectVertical;
 
     char *_menu = strdup("Menu");
     char *_open = strdup("Open editor");

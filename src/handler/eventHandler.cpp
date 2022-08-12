@@ -82,18 +82,25 @@ void EventHandler::mainMenuHandler(const int index)
             //set orientation
         case 102:
             {
-                //TODO reset variables!!
                 // Set screen orientation: 0=portrait, 1=landscape 90, 2=landscape 270, 3=portrait 180
-                // For global settings: -1=auto (g-sensor)
-                Log::writeInfoLog("turning orientation");
-                //auto currentOrientation = GetOrientation();
-                //if (currentOrientation == 0)
-                    SetOrientation(1);
-                //else if (currentOrientation == 1)
-                    //SetOrientation(0);
-
-                //void SetOrientation(int n);
-                //int GetOrientation();
+                int dialogResult = DialogSynchro(ICON_QUESTION, "Action", "How to turn?", "Portrait", "Landscape 270", "Cancel");
+                switch (dialogResult)
+                {
+                    case 1:
+                        {
+                            SetOrientation(0);
+                            break;
+                        }
+                    case 2:
+                        {
+                            SetOrientation(2);
+                            break;
+                        }
+                    default:
+                        break;
+                }
+                //TODO use views and redraw
+                Message(ICON_INFORMATION,"Error", "Open menu and select what to do",3000);
                 break;
             }
             //Exit
