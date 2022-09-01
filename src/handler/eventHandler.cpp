@@ -12,14 +12,12 @@
 #include "mainMenu.h"
 
 #include "log.h"
+#include "util.h"
 
-#include "deviceModel.h"
-#include "devicesView.h"
-
-#include "fileModel.h"
-#include "fileView.h"
+#include "view.h"
 
 #include "textView.h"
+#include "errorView.h"
 
 #include "fileBrowser.h"
 #include "fileModel.h"
@@ -69,7 +67,7 @@ void EventHandler::mainMenuHandler(const int index)
 {
     switch (index)
     {
-            //start input mode
+        //start input mode
         case 101:
             {
                 if (_currentDevice.name.empty()){
@@ -133,55 +131,51 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
 {
     if (type == EVT_POINTERUP)
     {
-        //TODO switch view
-        if (_currentView == Views::DEVICEVIEW)
+        if (_currentViews->checkIfEntryClicked(par1,par2))
         {
-            if (_devicesView->checkIfEntryClicked(par1,par2))
+
+            switch(_currentView)
             {
-                _devicesView->invertCurrentEntryColor();
-                if (createDevice(_devicesView->getCurrentEntry()))
-                {
-                    getLocalFiles(ARTICLE_FOLDER);
-                }
-                else
-                {
-                    _devicesView->invertCurrentEntryColor();
-                    return 1;
-                }
+                case Views::DEVICE:
+                    {
+                        if (auto view = dynamic_cast<ListView<DeviceViewEntry,Device>*>(_currentViews.get()))
+                        {
+                            if (createDevice(view->getCurrentEntry()))
+                            {
+                                getLocalFiles(ARTICLE_FOLDER);
+                            }
+                            else
+                            {
+                                view->invertCurrentEntryColor();
+                            }
+                        }
+                        break;
+                    }
+                case Views::FIL:
+                    {
+                        if (auto view = dynamic_cast<ListView<FileViewEntry,FileItem>*>(_currentViews.get()))
+                        {
+                            if (view->getCurrentEntry().type == Type::FFOLDER)
+                            {
+                                auto path = view->getCurrentEntry().path;
+                                getLocalFiles(path);
+                            }
+                            else
+                            {
+                                _currentViews.reset(new TextView(_menu.getContentRect(),1, _currentDevice,view->getCurrentEntry().path));
+                                _currentView = Views::TEXT;
+
+                            }
+                        }
+                        break;
+                    }
+                default:
+                    break;
             }
-        }
-        else if (_currentView == Views::FILVIEW)
-        {
-            if (_fileView->checkIfEntryClicked(par1, par2))
-            {
-                _fileView->invertCurrentEntryColor();
-
-                if (_fileView->getCurrentEntry().type == Type::FFOLDER)
-                {
-                    //TODO just once? and in getLocalFiles?
-                    FileBrowser fileBrowser = FileBrowser(true);
-                    vector<FileItem> currentFolder = fileBrowser.getFileStructure(_fileView->getCurrentEntry().path);
-
-                    _fileView.reset(new FileView(_menu.getContentRect(), currentFolder,1));
-                }
-                else
-                {
-                    _currentView = Views::TXVIEW;
-                    TextView text = TextView(_menu.getContentRect(),1, _currentDevice,_fileView->getCurrentEntry().path);
-
-                }
-                //TODO add new file
-                if (false)
-                {
-                    string _temp = "Filename";
-                    _temp.resize(60);
-                    OpenKeyboard(_temp.c_str(), &_temp[0], 60 - 1, KBD_NORMAL, &keyboardHandlerStatic);
-                }
-
-            }
+            return 0;
         }
     }
-    return 0;
+    return 1;
 }
 
 int EventHandler::keyHandler(const int type, const int par1, const int par2)
@@ -224,65 +218,53 @@ void EventHandler::createInputEvent()
 
         while(std::getline(infile, line))
         {
-            //TODO test
             switch (line.front())
             {
                 case 'N':
-                temp.name = line.substr(line.find('=')+1);
-                break;
+                    temp.name = line.substr(line.find('=')+1);
+                    break;
                 case 'S':
-                temp.sysfs = line.substr(line.find('=')+1);
-                break;
+                    temp.sysfs = line.substr(line.find('=')+1);
+                    break;
                 case 'U':
-                temp.uniq = line.substr(line.find('=')+1);
-                break;
+                    temp.uniq = line.substr(line.find('=')+1);
+                    break;
                 case 'H':
-                {
-                string handlers =line.substr(line.find('=')+1);
-                int t = handlers.find("event");
-                if (t != std::string::npos){
-                    handlers = handlers.substr(t);
-                    handlers = handlers.substr(5,1);
-                    temp.eventID = std::stoi(handlers);
-                }
-                break;
-                }
+                    {
+                        string handlers =line.substr(line.find('=')+1);
+                        int t = handlers.find("event");
+                        if (t != std::string::npos){
+                            handlers = handlers.substr(t);
+                            handlers = handlers.substr(5,1);
+                            temp.eventID = std::stoi(handlers);
+                        }
+                        break;
+                    }
             }
-            //TODO filter by type
-            //B: --> EV
-            //B: --> KEY
             if (line.empty() && !temp.name.empty() && temp.eventID > 6){
                 devices.push_back(temp);
                 temp = {};
             }
         }
 
-        //TODO test
         switch (devices.size())
         {
             case 1:
-                if(createDevice(devices.at(0)))
+                if (createDevice(devices.at(0)))
                 {
                     getLocalFiles(ARTICLE_FOLDER);
                     break;
                 }
             case 2 ... INT_MAX :
                 {
-                    _devicesView.reset(new DevicesView(_menu.getContentRect(),devices,1));
-                    _devicesView->draw();
-                    _currentView = Views::DEVICEVIEW;
+                    _currentViews.reset(new ListView<DeviceViewEntry,Device>(_menu.getContentRect(),devices));
+                    _currentView = Views::DEVICE;
                     break;
                 }
             default:
                 {
-                    FillAreaRect(&_menu.getContentRect(), WHITE);
-                    auto textHeight = ScreenHeight() / 45;
-                    auto startscreenFont = OpenFont("LiberationMono", textHeight, FONT_BOLD);
-                    SetFont(startscreenFont, BLACK);
-                    DrawTextRect2(&_menu.getContentRect(), "No bluetooth keyboards available. Please pair a new one using bluetoothctl");
-                    CloseFont(startscreenFont);
-                    _currentView = Views::DEFAULTVIEW;
-                    PartialUpdate(_menu.getContentRect().x, _menu.getContentRect().y, _menu.getContentRect().w, _menu.getContentRect().h);
+                    _currentViews.reset(new ErrorView(_menu.getContentRect(), "No bluetooth keyboards avialable. Please pair a new one using bluetoothctl or connect a registered one. To refresh click the menu button and select \"Start input mode\"."));
+                    _currentView = Views::ERROR;
                 }
         }
 
@@ -293,67 +275,53 @@ void EventHandler::createInputEvent()
 
 bool EventHandler::createDevice(const Device &device)
 {
-                _currentDevice = device;
-                if (_currentDevice.name.empty())
-                    createInputEvent();
+    _currentDevice = device;
+    if (_currentDevice.name.empty())
+        createInputEvent();
 
-                if (iv_access("mnt/secure/su", R_OK) != 0)
-                {
-                    Message(ICON_ERROR,"Error","No root access available.",2000);
-                    Log::writeInfoLog("no root access");
-                    return false;
-                }
+    if (iv_access("mnt/secure/su", R_OK) != 0)
+    {
+        Message(ICON_ERROR,"Error","No root access available.",2000);
+        Log::writeInfoLog("no root access");
+        return false;
+    }
 
-                std::ifstream infile("/sys" + _currentDevice.sysfs + "/event" + std::to_string(_currentDevice.eventID) + "/uevent");
-                string line;
-                string major, minor, devname;
+    std::ifstream infile("/sys" + _currentDevice.sysfs + "/event" + std::to_string(_currentDevice.eventID) + "/uevent");
+    string line;
+    string major, minor, devname;
 
-                while(std::getline(infile, line))
-                {
-                    if (line.find("MAJOR") != std::string::npos)
-                        major = line.substr(line.find('=')+1);
-                    if (line.find("MINOR") != std::string::npos)
-                        minor = line.substr(line.find('=')+1);
-                    if (line.find("DEVNAME") != std::string::npos)
-                        devname = line.substr(line.find('=')+1);
-                }
+    while(std::getline(infile, line))
+    {
+        if (line.find("MAJOR") != std::string::npos)
+            major = line.substr(line.find('=')+1);
+        if (line.find("MINOR") != std::string::npos)
+            minor = line.substr(line.find('=')+1);
+        if (line.find("DEVNAME") != std::string::npos)
+            devname = line.substr(line.find('=')+1);
+    }
 
-                string systemCommand ="/mnt/secure/su rm /dev/input/event" + std::to_string(_currentDevice.eventID);
-                auto i = system(systemCommand.c_str());
-                systemCommand = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
-                if (system(systemCommand.c_str()) != 0)
-                {
-                    Message(ICON_ERROR,"Error","Could not create link to input.",2000);
-                    Log::writeInfoLog("Could not create link to input. System return code " + std::to_string(i));
-                    return false;
-                }
+    string systemCommand ="/mnt/secure/su rm /dev/input/event" + std::to_string(_currentDevice.eventID);
+    auto i = system(systemCommand.c_str());
+    systemCommand = "/mnt/secure/su mknod -m 664 /dev/input/event" + std::to_string(_currentDevice.eventID) +  " c " + major + " " + minor;
+    if (system(systemCommand.c_str()) != 0)
+    {
+        Message(ICON_ERROR,"Error","Could not create link to input.",2000);
+        Log::writeInfoLog("Could not create link to input. System return code " + std::to_string(i));
+        return false;
+    }
 
-                return true;
-
+    return true;
 }
 
 void EventHandler::getLocalFiles(const string &path)
 {
 
+    _currentPath = path;
     FileBrowser fb = FileBrowser(true);
-    vector<FileItem> files = fb.getFileStructure(path);
+    vector<FileItem> files = fb.getFileStructure(_currentPath);
 
-
-
-    //TODO add entry "add new file"
-    /*
-    if (files.size() <= 0)
-    {
-        FillAreaRect(&_menu.getContentRect(), WHITE);
-        std::ofstream output(ARTICLE_FOLDER + "/HelloWorld.txt");
-        Message(ICON_INFORMATION,"Info", "No files available. Will create an new one. You can add further files to the TextEditor folder.",2000);
-        getLocalFiles(ARTICLE_FOLDER);
-    }
-    else
-    {
-    */
-        _fileView.reset(new FileView(_menu.getContentRect(),files, 1));
-        _currentView = Views::FILVIEW;
+    _currentViews.reset(new ListView<FileViewEntry,FileItem>(_menu.getContentRect(),files));
+    _currentView = Views::FIL;
 }
 
 void EventHandler::keyboardHandlerStatic(char *text)

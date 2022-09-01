@@ -13,23 +13,19 @@
 
 #include "mainMenu.h"
 
-#include "devicesView.h"
-#include "deviceModel.h"
+#include "listView.h"
 
-#include "fileView.h"
+#include "deviceModel.h"
+#include "deviceViewEntry.h"
+
+#include "fileModel.h"
+#include "fileViewEntry.h"
+
 
 #include <string>
 #include <memory>
 #include <map>
 #include <vector>
-
-enum class Views
-{
-    DEFAULTVIEW,
-    FILVIEW,
-    DEVICEVIEW,
-    TXVIEW
-};
 
 const std::string CONFIG_FOLDER = "/mnt/ext1/system/config/textEditor";
 const std::string ARTICLE_FOLDER = "/mnt/ext1/textEditor";
@@ -57,8 +53,7 @@ class EventHandler
     private:
         static std::unique_ptr<EventHandler> _eventHandlerStatic;
         MainMenu _menu = MainMenu("Text Editor");
-        std::unique_ptr<DevicesView> _devicesView;
-        std::unique_ptr<FileView> _fileView;
+        std::unique_ptr<View> _currentViews;
         Views _currentView;
         Device _currentDevice;
         std::string _currentPath;
