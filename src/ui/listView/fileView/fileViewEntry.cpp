@@ -27,6 +27,5 @@ void FileViewEntry::draw(const ifont *entryFont, const ifont *entryFontBold, int
     const char *type = _entry.type == Type::FFOLDER ? "Folder" : "File";
     DrawTextRect(_position.x, _position.y + heightOfTitle + fontHeight, _position.w, fontHeight, type, ALIGN_RIGHT);
 
-    int line = (_position.y + _position.h) - 1;
-    DrawLine(0, line, ScreenWidth(), line, BLACK);
+    drawSeperator();
 }

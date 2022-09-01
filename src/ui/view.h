@@ -16,10 +16,10 @@
 
 enum class Views
 {
-    DEFAULT,
     FIL,
     DEVICE,
-    TEXT
+    TEXT,
+    ERROR
 };
 
 class View
@@ -67,9 +67,10 @@ public:
         */
     virtual void draw() = 0;
 
-    virtual void setViewAsCurrent() = 0;
 
-     Views getCurrentView(){return _currentView;} ;
+    Views getCurrentView(){return _currentView;};
+
+    void setContentRect(const irect &contentRect){ _contentRect = contentRect;};
 
 
 protected:
@@ -77,9 +78,8 @@ protected:
     int _footerHeight;
     int _footerFontHeight;
     int _entryFontHeight;
-    const irect _contentRect;
+    irect _contentRect;
     ifont  *_footerFont;
-    //std::unique_ptr<ifont> _footerFont;
     int _page = 1;
     int _shownPage;
     irect _pageIcon;

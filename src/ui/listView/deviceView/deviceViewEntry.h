@@ -1,5 +1,5 @@
 //------------------------------------------------------------------
-// devicesViewEntry.h
+// deviceViewEntry.h
 //
 // Author:           JuanJakobo
 // Date:             08.09.2021
@@ -12,7 +12,7 @@
 #include "listViewEntry.h"
 #include "deviceModel.h"
 
-class DevicesViewEntry : public ListViewEntry
+class DeviceViewEntry : public ListViewEntry
 {
 public:
     /**
@@ -22,7 +22,7 @@ public:
         * @param Rect area of the screen the item is positioned
         * @param entry entry that shall be drawn
         */
-    DevicesViewEntry(int page, const irect &position, const Device &entry);
+    DeviceViewEntry(int page, const irect &position, const Device &entry) : ListViewEntry(page, position), _entry(entry){}
 
     /**
         * draws the DeviceViewEntry to the screen

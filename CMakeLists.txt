@@ -55,14 +55,12 @@ set(SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp
 			${CMAKE_SOURCE_DIR}/src/handler/mainMenu.cpp
 			${CMAKE_SOURCE_DIR}/src/util/log.cpp
 			${CMAKE_SOURCE_DIR}/src/ui/view.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/listView.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/listViewEntry.cpp
+            ${CMAKE_SOURCE_DIR}/src/ui/listView/listViewEntry.cpp
+            ${CMAKE_SOURCE_DIR}/src/ui/listView/deviceView/deviceViewEntry.cpp
+            ${CMAKE_SOURCE_DIR}/src/ui/listView/fileView/fileViewEntry.cpp
+            ${CMAKE_SOURCE_DIR}/src/ui/errorView/errorView.cpp
             ${CMAKE_SOURCE_DIR}/src/ui/textView/textView.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesView.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/devicesView/devicesViewEntry.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileView.cpp
-			${CMAKE_SOURCE_DIR}/src/ui/fileView/fileViewEntry.cpp
-			${CMAKE_SOURCE_DIR}/src/api/fileBrowser.cpp
+            ${CMAKE_SOURCE_DIR}/src/api/fileBrowser.cpp
 )
 
 add_executable(Texteditor.app ${SOURCES})
@@ -71,9 +69,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/handler/
     ${CMAKE_SOURCE_DIR}/src/util/
     ${CMAKE_SOURCE_DIR}/src/ui/
+    ${CMAKE_SOURCE_DIR}/src/ui/listView/
+    ${CMAKE_SOURCE_DIR}/src/ui/listView/fileView/
+    ${CMAKE_SOURCE_DIR}/src/ui/listView/deviceView/
     ${CMAKE_SOURCE_DIR}/src/ui/textView/
-    ${CMAKE_SOURCE_DIR}/src/ui/devicesView/
-    ${CMAKE_SOURCE_DIR}/src/ui/fileView/
+    ${CMAKE_SOURCE_DIR}/src/ui/errorView/
     ${CMAKE_SOURCE_DIR}/src/api/
 )
 

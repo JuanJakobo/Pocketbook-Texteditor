@@ -40,5 +40,7 @@ public:
 protected:
     int _page;
     irect _position;
+
+    void drawSeperator();
 };
 #endif
