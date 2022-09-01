@@ -42,6 +42,7 @@ EventHandler::EventHandler()
     if (iv_access(ARTICLE_FOLDER.c_str(), W_OK) != 0)
         iv_mkdir(ARTICLE_FOLDER.c_str(), 0777);
 
+    SetOrientation(Util::accessConfig(Action::IReadInt, "orientation",0));
     createInputEvent();
 }
 
@@ -81,24 +82,27 @@ void EventHandler::mainMenuHandler(const int index)
         case 102:
             {
                 // Set screen orientation: 0=portrait, 1=landscape 90, 2=landscape 270, 3=portrait 180
-                int dialogResult = DialogSynchro(ICON_QUESTION, "Action", "How to turn?", "Portrait", "Landscape 270", "Cancel");
-                switch (dialogResult)
+                int orientation = []{
+                    switch(DialogSynchro(ICON_QUESTION, "Action", "How to turn?", "Portrait", "Landscape 270", "Cancel"))
+                    {
+                        case 1:
+                            return 0;
+                            break;
+                        case 2:
+                            return 2;
+                            break;
+                        default:
+                            return -1;
+                            break;
+                    }
+                }();
+                if (GetOrientation() != orientation && orientation != -1)
                 {
-                    case 1:
-                        {
-                            SetOrientation(0);
-                            break;
-                        }
-                    case 2:
-                        {
-                            SetOrientation(2);
-                            break;
-                        }
-                    default:
-                        break;
+                    SetOrientation(orientation);
+                    Util::accessConfig(Action::IWriteInt, "orientation",orientation);
+                    _currentViews->setContentRect(_menu.getContentRect());
+                    _currentViews->draw();
                 }
-                //TODO use views and redraw
-                Message(ICON_INFORMATION,"Error", "Open menu and select what to do",3000);
                 break;
             }
             //create File
