@@ -24,19 +24,6 @@ struct input_event event;
 
 TextView::TextView(const irect &contentRect, int shownPage, Device device, const string &filePath) : View(contentRect,shownPage), _filePath(filePath)
 {
-    //_textHeight = _contentRect.h/35;
-    _textHeight = (GetOrientation() == 0 || GetOrientation() == 3) ? ScreenHeight()/35 : ScreenWidth()/30;
-
-    _textNextLineY = _textHeight + 10;
-    int margin = 20; //ScreenWidth()/50;
-    _textBeginX = margin;
-    //_textEndX = ScreenWidth() - _textBeginX - margin;
-    _textEndX = _contentRect.w - _textBeginX - margin;
-    _textBeginY = contentRect.y; //+ margin;
-    _textEndY = _contentRect.h -_footerHeight - _textHeight; // - margin;
-
-    _textFont = OpenFont("Roboto", _textHeight , FONT_STD);
-
     draw();
     handleKeyEvents(device.eventID,filePath);
 }
@@ -54,6 +41,18 @@ bool TextView::checkIfEntryClicked(int x, int y)
 void TextView::draw()
 {
     FillAreaRect(&_contentRect, WHITE);
+
+    _textHeight = (GetOrientation() == 0 || GetOrientation() == 3) ? ScreenHeight()/35 : ScreenWidth()/30;
+    _textFont = OpenFont("Roboto", _textHeight , FONT_STD);
+    _textNextLineY = _textHeight + 10;
+    int margin = 20; //ScreenWidth()/50;
+    _textBeginX = margin;
+    //_textEndX = ScreenWidth() - _textBeginX - margin;
+    _textEndX = _contentRect.w - _textBeginX - margin;
+    _textBeginY = _contentRect.y; //+ margin;
+    _textEndY = _contentRect.h -_footerHeight - _textHeight; // - margin;
+
+
     //only draw last page, get lines from the end of the file to the begining?
     _currentX = _textBeginX;
     _currentY = _textBeginY;
