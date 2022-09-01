@@ -68,7 +68,5 @@ private:
     void addPage();
     void removePage();
 
-    void setViewAsCurrent() override { _currentView = Views::TEXT;};
-
 };
 #endif

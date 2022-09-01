@@ -24,7 +24,8 @@ struct input_event event;
 
 TextView::TextView(const irect &contentRect, int shownPage, Device device, const string &filePath) : View(contentRect,shownPage), _filePath(filePath)
 {
-    _textHeight = _contentRect.h/35; // (GetOrientation() == 1 || GetOrientation() == 3) ? ScreenHeight()/35 : ScreenWidth()/35;
+    //_textHeight = _contentRect.h/35;
+    _textHeight = (GetOrientation() == 0 || GetOrientation() == 3) ? ScreenHeight()/35 : ScreenWidth()/30;
 
     _textNextLineY = _textHeight + 10;
     int margin = 20; //ScreenWidth()/50;
