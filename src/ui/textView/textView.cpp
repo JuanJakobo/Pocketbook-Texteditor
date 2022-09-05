@@ -22,7 +22,7 @@ using std::string;
 
 struct input_event event;
 
-TextView::TextView(const irect &contentRect, int shownPage, Device device, const string &filePath) : View(contentRect,shownPage), _filePath(filePath)
+TextView::TextView(const irect &contentRect, Device device, const string &filePath, int shownPage) : View(contentRect,shownPage), _filePath(filePath)
 {
     draw();
     handleKeyEvents(device.eventID,filePath);
@@ -443,11 +443,12 @@ void TextView::addPage()
 {
     _shownPage++;
     _page = _shownPage;
-    FillAreaRect(&_contentRect, WHITE);
     _currentX = _textBeginX;
     _currentY = _textBeginY;
     //needed here?
     _cursorPositionStr = _currentText.size();
+
+    FillAreaRect(&_contentRect, WHITE);
     drawFooter();
     FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
     PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);

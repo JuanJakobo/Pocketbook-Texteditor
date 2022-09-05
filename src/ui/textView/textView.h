@@ -26,7 +26,7 @@ public:
         * @param ContentRect area of the screen where the list view is placed
         * @param Items items that shall be shown in the listview
         */
-    TextView(const irect &contentRect, int shownPage, Device device, const std::string &filePath);
+    TextView(const irect &contentRect, Device device, const std::string &filePath, int shownPage = 1);
 
     ~TextView();
 

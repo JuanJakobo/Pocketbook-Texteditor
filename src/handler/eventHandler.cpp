@@ -166,7 +166,7 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
                             }
                             else
                             {
-                                _currentViews.reset(new TextView(_menu.getContentRect(),1, _currentDevice,view->getCurrentEntry().path));
+                                _currentViews.reset(new TextView(_menu.getContentRect(), _currentDevice,view->getCurrentEntry().path));
                                 _currentView = Views::TEXT;
 
                             }
