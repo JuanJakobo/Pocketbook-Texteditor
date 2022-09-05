@@ -63,7 +63,7 @@ private:
     ifont *_textFont;
 
     int drawChar(const char &c);
-    void loadKeyMaps();
+    bool loadKeyMaps();
     void handleKeyEvents(int eventID, const std::string &path);
     void addPage();
     void removePage();

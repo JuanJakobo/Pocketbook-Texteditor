@@ -125,7 +125,7 @@ int TextView::drawChar(const char &c)
 
 }
 
-void TextView::loadKeyMaps()
+bool TextView::loadKeyMaps()
 {
     string keyBindingsPath = CONFIG_FOLDER + "/map.keys";
 
@@ -165,218 +165,222 @@ void TextView::loadKeyMaps()
         }
     }else{
         Message(ICON_INFORMATION,"Info", "No keymap file found. Please place a key file into \"/system/config/texteditor\".",2000);
+        return false;
     }
+    return true;
 }
 
 void TextView::handleKeyEvents(int eventID, const string &path)
 {
-    loadKeyMaps();
-    std::ifstream eventFile("/dev/input/event" + std::to_string(eventID), std::ifstream::in);
-
-    if (_currentText.empty())
+    if(loadKeyMaps())
     {
-        _currentX = _textBeginX;
-        _currentY = _textBeginY;
-        _lineCount = 0;
-        _cursorPositionStr = 0;
-    }
+        std::ifstream eventFile("/dev/input/event" + std::to_string(eventID), std::ifstream::in);
 
-    if (eventFile.is_open())
-    {
-        auto shiftPressed = false;
-        auto altGrPressed = false;
-
-        char data[sizeof(event)];
-        bool inputSession = true;
-
-        Message(ICON_INFORMATION, "Information", "To cancel input mode press ESC.", 2000);
-
-        //TODO make ü avialble
-        unsigned char key;
-
-        //TODO do in thread
-        while(inputSession)
+        if (_currentText.empty())
         {
-            key = 0;
-            SetFont(_textFont, BLACK);
-            eventFile.read(data,sizeof(event));
-            memcpy(&event, data, sizeof(event));
+            _currentX = _textBeginX;
+            _currentY = _textBeginY;
+            _lineCount = 0;
+            _cursorPositionStr = 0;
+        }
 
-            if (event.type == EV_KEY)
+        if (eventFile.is_open())
+        {
+            auto shiftPressed = false;
+            auto altGrPressed = false;
+
+            char data[sizeof(event)];
+            bool inputSession = true;
+
+            Message(ICON_INFORMATION, "Information", "To cancel input mode press ESC.", 2000);
+
+            //TODO make ü avialble
+            unsigned char key;
+
+            //TODO do in thread
+            while(inputSession)
             {
-                if (event.value == EV_KEY)
+                key = 0;
+                SetFont(_textFont, BLACK);
+                eventFile.read(data,sizeof(event));
+                memcpy(&event, data, sizeof(event));
+
+                if (event.type == EV_KEY)
                 {
-                    switch (event.code)
+                    if (event.value == EV_KEY)
                     {
-                        case KEY_ESC:
-                            {
-                                inputSession = false;
-                                if (!_currentText.empty()){
-                                    std::ofstream text(path);
-                                    text << _currentText;
-                                    text.close();
-                                    Message(ICON_INFORMATION,"Information", "Input Mode closed. File saved.",1000);
-                                }else{
-                                    remove(path.c_str());
-                                    Message(ICON_INFORMATION,"Information", "Input Mode closed. File removed.",1000);
-                                }
-                                break;
-                            }
-                        case KEY_BACKSPACE:
-                            {
-                                if (!_currentText.empty()){
-
-                                    if (_currentX <= _textBeginX){
-                                        if (_currentText.at(_cursorPositionStr-1) == '\n'){
-                                            _currentText.erase(_cursorPositionStr-1);
-                                            _cursorPositionStr = _currentText.size();
-                                        }
-                                        FillArea(_currentX,_currentY, _currentX+_cursorThickness,_textHeight+5, WHITE);
-                                        PartialUpdate(_currentX,_currentY,_currentX+_cursorThickness,_textHeight+5);
-
-                                        _currentY -= _textNextLineY;
-                                        if (_currentY < _textBeginY)
-                                            removePage();
-                                        //doopelt
-                                        auto it = _lineWidth.find(_lineCount);
-                                        if (it != _lineWidth.end()){
-                                            _currentX = it->second;
-                                        }
-                                        _lineWidth.erase(_lineCount);
-                                        _lineCount--;
-                                        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                        PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                        switch (event.code)
+                        {
+                            case KEY_ESC:
+                                {
+                                    inputSession = false;
+                                    if (!_currentText.empty()){
+                                        std::ofstream text(path);
+                                        text << _currentText;
+                                        text.close();
+                                        Message(ICON_INFORMATION,"Information", "Input Mode closed. File saved.",1000);
                                     }else{
+                                        remove(path.c_str());
+                                        Message(ICON_INFORMATION,"Information", "Input Mode closed. File removed.",1000);
+                                    }
+                                    break;
+                                }
+                            case KEY_BACKSPACE:
+                                {
+                                    if (!_currentText.empty()){
 
-                                        //TODO twice
-                                        if (!_currentText.empty()){
+                                        if (_currentX <= _textBeginX){
+                                            if (_currentText.at(_cursorPositionStr-1) == '\n'){
+                                                _currentText.erase(_cursorPositionStr-1);
+                                                _cursorPositionStr = _currentText.size();
+                                            }
+                                            FillArea(_currentX,_currentY, _currentX+_cursorThickness,_textHeight+5, WHITE);
+                                            PartialUpdate(_currentX,_currentY,_currentX+_cursorThickness,_textHeight+5);
 
-                                            int charWidth = CharWidth(_currentText.at(_cursorPositionStr-1));
-                                            _currentX -= charWidth;
-                                            _currentText.erase(_cursorPositionStr-1);
-                                            _cursorPositionStr = _currentText.size();
-
-                                            FillArea(_currentX,_currentY, charWidth+_cursorThickness,_textHeight+5, WHITE);
-                                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                            PartialUpdate(_currentX,_currentY,charWidth+_cursorThickness,_textHeight+5);
-                                        }
-                                        else
-                                        {
+                                            _currentY -= _textNextLineY;
+                                            if (_currentY < _textBeginY)
+                                                removePage();
+                                            //doopelt
+                                            auto it = _lineWidth.find(_lineCount);
+                                            if (it != _lineWidth.end()){
+                                                _currentX = it->second;
+                                            }
+                                            _lineWidth.erase(_lineCount);
+                                            _lineCount--;
                                             FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
                                             PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                                        }else{
+
+                                            //TODO twice
+                                            if (!_currentText.empty()){
+
+                                                int charWidth = CharWidth(_currentText.at(_cursorPositionStr-1));
+                                                _currentX -= charWidth;
+                                                _currentText.erase(_cursorPositionStr-1);
+                                                _cursorPositionStr = _currentText.size();
+
+                                                FillArea(_currentX,_currentY, charWidth+_cursorThickness,_textHeight+5, WHITE);
+                                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                                PartialUpdate(_currentX,_currentY,charWidth+_cursorThickness,_textHeight+5);
+                                            }
+                                            else
+                                            {
+                                                FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                                PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight+5);
+                                            }
                                         }
+                                    }else{
+                                        Message(ICON_INFORMATION, "Information", "No more characters to delete.", 2000);
                                     }
-                                }else{
-                                    Message(ICON_INFORMATION, "Information", "No more characters to delete.", 2000);
+                                    break;
                                 }
+                            case KEY_TAB:
                                 break;
-                            }
-                        case KEY_TAB:
-                            break;
-                        case KEY_ENTER:
-                            {
-                                _lineCount++;
-                                _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
-                                _currentText += "\n";
+                            case KEY_ENTER:
+                                {
+                                    _lineCount++;
+                                    _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
+                                    _currentText += "\n";
 
-                                if ((_currentY+_textNextLineY) >= _textEndY){
-                                    _currentY += _textNextLineY;
-                                    addPage();
-                                }else{
+                                    if ((_currentY+_textNextLineY) >= _textEndY){
+                                        _currentY += _textNextLineY;
+                                        addPage();
+                                    }else{
 
-                                    FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
-                                    PartialUpdate(_currentX,_currentY, _cursorThickness,_textHeight);
+                                        FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
+                                        PartialUpdate(_currentX,_currentY, _cursorThickness,_textHeight);
 
-                                    _currentY += _textNextLineY;
-                                    _currentX = _textBeginX;
+                                        _currentY += _textNextLineY;
+                                        _currentX = _textBeginX;
 
-                                    FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                                    PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight);
+                                        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                                        PartialUpdate(_currentX,_currentY,_cursorThickness,_textHeight);
+                                    }
+
+                                    _cursorPositionStr = _currentText.size();
+
+                                    break;
                                 }
-
-                                _cursorPositionStr = _currentText.size();
-
+                            case KEY_LEFTCTRL:
+                            case KEY_RIGHTCTRL:
+                                Message(1,"db","ctrl",1000);
                                 break;
-                            }
-                        case KEY_LEFTCTRL:
-                        case KEY_RIGHTCTRL:
-                            Message(1,"db","ctrl",1000);
-                            break;
-                        case KEY_LEFTALT:
-                            Message(1,"db","alt",1000);
-                            break;
-                        case KEY_RIGHTALT:
-                            altGrPressed = !altGrPressed;
-                            break;
-                        case KEY_LEFTSHIFT:
-                        case KEY_RIGHTSHIFT:
-                            shiftPressed = !shiftPressed;
-                            break;
-                        case KEY_CAPSLOCK:
-                            shiftPressed = !shiftPressed;
-                            break;
-                        case KEY_UP:
-                        case KEY_DOWN:
-                        case KEY_RIGHT:
-                        case KEY_LEFT:
-                            Message(1,"db","arrow keys",1000);
-                            break;
-                        case KEY_SPACE:
-                            key = ' ';
-                            break;
-                        default:
-                            {
-                                std::map<int,char>::iterator it;
-                                if (shiftPressed){
-                                    it = _keyBindingsShift.find(event.code);
-                                }else if (altGrPressed){
-                                    it = _keyBindingsAltGr.find(event.code);
-                                }else{
-                                    it = _keyBindings.find(event.code);
+                            case KEY_LEFTALT:
+                                Message(1,"db","alt",1000);
+                                break;
+                            case KEY_RIGHTALT:
+                                altGrPressed = !altGrPressed;
+                                break;
+                            case KEY_LEFTSHIFT:
+                            case KEY_RIGHTSHIFT:
+                                shiftPressed = !shiftPressed;
+                                break;
+                            case KEY_CAPSLOCK:
+                                shiftPressed = !shiftPressed;
+                                break;
+                            case KEY_UP:
+                            case KEY_DOWN:
+                            case KEY_RIGHT:
+                            case KEY_LEFT:
+                                Message(1,"db","arrow keys",1000);
+                                break;
+                            case KEY_SPACE:
+                                key = ' ';
+                                break;
+                            default:
+                                {
+                                    std::map<int,char>::iterator it;
+                                    if (shiftPressed){
+                                        it = _keyBindingsShift.find(event.code);
+                                    }else if (altGrPressed){
+                                        it = _keyBindingsAltGr.find(event.code);
+                                    }else{
+                                        it = _keyBindings.find(event.code);
+                                    }
+                                    key = it->second;
+
+                                    break;
                                 }
-                                key = it->second;
+                        }
+                        if(key != 0)
+                        {
+                            Log::writeInfoLog("eventcode " + std::to_string(event.code) + " key " + std::to_string(key));
+                            FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
 
-                                break;
-                            }
+                            _currentText += key;
+                            int textWidth = drawChar(key);
+
+                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                            PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
+                        }else{
+                            //Message(1,"db",std::to_string(event.code).c_str(),1000);
+                        }
                     }
-                    if(key != 0)
+                    else if (event.value == 0)
                     {
-                        Log::writeInfoLog("eventcode " + std::to_string(event.code) + " key " + std::to_string(key));
-                        FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
-
-                        _currentText += key;
-                        int textWidth = drawChar(key);
-
-                        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                        PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
-                    }else{
-                        //Message(1,"db",std::to_string(event.code).c_str(),1000);
-                    }
-                }
-                else if (event.value == 0)
-                {
-                    switch (event.code)
-                    {
-                        case KEY_LEFTSHIFT:
-                            shiftPressed = !shiftPressed;
-                            break;
-                        case KEY_RIGHTALT:
-                            altGrPressed = !altGrPressed;
-                            break;
-                        default:
-                            break;
+                        switch (event.code)
+                        {
+                            case KEY_LEFTSHIFT:
+                                shiftPressed = !shiftPressed;
+                                break;
+                            case KEY_RIGHTALT:
+                                altGrPressed = !altGrPressed;
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
+            eventFile.close();
         }
-        eventFile.close();
-    }
-    else
-    {
-        DrawTextRect(0, (_contentRect.h / 3) * 2, _contentRect.w, 30, strerror(errno), ALIGN_CENTER);
-        PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
-    }
+        else
+        {
+            DrawTextRect(0, (_contentRect.h / 3) * 2, _contentRect.w, 30, strerror(errno), ALIGN_CENTER);
+            PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
+        }
 
+    }
 }
 
 
