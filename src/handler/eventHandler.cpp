@@ -184,22 +184,21 @@ int EventHandler::pointerHandler(const int type, const int par1, const int par2)
 
 int EventHandler::keyHandler(const int type, const int par1, const int par2)
 {
-    //menu button
+    //TODO lock
     if (type == EVT_KEYPRESS)
     {
-        if (par1 == 23)
+        switch(par1)
         {
-            return _menu.createMenu(EventHandler::mainMenuHandlerStatic, _currentView);
-        }
-        //left button -> pre page
-        else if (par1 == 24)
-        {
-            return 1;
-        }
-        //right button -> next page
-        else if (par1 == 25)
-        {
-            return 1;
+            case 23: //menu button
+                return _menu.createMenu(EventHandler::mainMenuHandlerStatic, _currentView);
+            case 24: //left button
+                (GetOrientation() == 0 || GetOrientation() == 3) ? _currentViews->prevPage() : _currentViews->nextPage();
+                break;
+            case 25: //right button
+                (GetOrientation() == 0 || GetOrientation() == 3) ? _currentViews->nextPage() : _currentViews->prevPage();
+                break;
+            default:
+                return 1;
         }
     }
 
