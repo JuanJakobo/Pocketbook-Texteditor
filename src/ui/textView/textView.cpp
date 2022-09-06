@@ -35,6 +35,24 @@ TextView::~TextView()
 }
 bool TextView::checkIfEntryClicked(int x, int y)
 {
+    //TODO lock
+    if (IsInRect(x, y, &_firstPageButton))
+    {
+        firstPage();
+    }
+    else if (IsInRect(x, y, &_nextPageButton))
+    {
+        nextPage();
+    }
+    else if (IsInRect(x, y, &_prevPageButton))
+    {
+        prevPage();
+    }
+    else if (IsInRect(x, y, &_lastPageButton))
+    {
+        actualizePage(_page);
+    }
+
     return false;
 }
 

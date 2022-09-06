@@ -32,8 +32,8 @@ class ListView : public View
         ListView(const irect &contentRect, const std::vector<B> &entries, int shownPage = 1) : View(contentRect,shownPage)
     {
         _entries.clear();
-
-        _entryFontHeight = contentRect.h/45;
+        //TODO move to draw to recalculate for orientation change...
+        _entryFontHeight = _contentRect.h/45;
 
         _entryFont = OpenFont("LiberationMono", _entryFontHeight, 1);
         _entryFontBold = OpenFont("LiberationMono-Bold", _entryFontHeight, 1);
@@ -41,6 +41,7 @@ class ListView : public View
         SetFont(_entryFont, BLACK);
 
         setEntries(entries);
+        draw();
     }
 
         ~ListView()
@@ -146,6 +147,12 @@ class ListView : public View
          *
          */
         void draw() override
+        {
+            drawPage();
+        }
+
+
+        void drawPage() override
         {
             FillAreaRect(&_contentRect, WHITE);
             drawEntries();

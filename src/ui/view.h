@@ -67,6 +67,8 @@ public:
         */
     virtual void draw() = 0;
 
+    virtual void drawPage() = 0;
+
 
     Views getCurrentView(){return _currentView;};
 

@@ -40,6 +40,7 @@ public:
     bool checkIfEntryClicked(int x, int y) override;
 
     void draw() override;
+    void drawPage() override;
 
 private:
     int _lineCount;

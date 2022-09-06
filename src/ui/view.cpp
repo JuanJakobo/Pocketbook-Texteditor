@@ -65,6 +65,6 @@ void View::actualizePage(int pageToShow)
     else
     {
         _shownPage = pageToShow;
-        draw();
+        drawPage();
     }
 }

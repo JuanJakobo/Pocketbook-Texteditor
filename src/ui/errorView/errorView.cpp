@@ -13,12 +13,8 @@ using std::string;
 
 ErrorView::ErrorView(const irect &contentRect, const string &text, int shownPage): View(contentRect,shownPage), _text(text)
 {
-    //_textHeight = (GetOrientation() == 0 || GetOrientation() == 3) ? ScreenHeight()/35 : ScreenWidth()/30;
-    //_textFont = OpenFont("Roboto", _textHeight , FONT_STD);
-    //
-    _textHeight = _contentRect.h / 45;
+    _textHeight = _contentRect.h / 30;
     _textFont = OpenFont("LiberationMono", _textHeight, FONT_BOLD);
-
     draw();
 }
 
@@ -32,7 +28,7 @@ bool ErrorView::checkIfEntryClicked(int x, int y)
     return false;
 }
 
-void ErrorView::draw()
+void ErrorView::drawPage()
 {
     FillAreaRect(&_contentRect, WHITE);
     SetFont(_textFont, BLACK);

@@ -39,7 +39,9 @@ public:
         */
     bool checkIfEntryClicked(int x, int y) override;
 
-    void draw() override;
+    void draw() override { drawPage();};
+
+    void drawPage() override;
 
 private:
     int _textHeight;
