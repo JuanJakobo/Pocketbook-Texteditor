@@ -65,17 +65,19 @@ void TextView::draw()
     _textNextLineY = _textHeight + 10;
     int margin = 20; //ScreenWidth()/50;
     _textBeginX = margin;
-    //_textEndX = ScreenWidth() - _textBeginX - margin;
     _textEndX = _contentRect.w - _textBeginX - margin;
     _textBeginY = _contentRect.y; //+ margin;
     _textEndY = _contentRect.h -_footerHeight - _textHeight; // - margin;
 
-
-    //only draw last page, get lines from the end of the file to the begining?
     _currentX = _textBeginX;
     _currentY = _textBeginY;
     _lineCount = 0;
     _currentText.clear();
+
+    //map containing page number and the first char?!
+    //map or vector?
+    _lastPageLineCount.insert(std::pair<int,int>(_page,0));
+    _pageCharPos.insert(std::pair<int,int>(_page,0));
 
     SetFont(_textFont, BLACK);
     if (iv_access(_filePath.c_str(), W_OK) == 0){
@@ -97,15 +99,32 @@ void TextView::draw()
                 {
                     multipleLines = true;
                     _currentText += c;
-                    // TODO does not have to draw all pages
-                    drawChar(c);
+
+                    int charWidth = CharWidth(c);
+
+                    if (_currentX + charWidth > _textEndX){
+                        _lineCount++;
+                        _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
+                        _currentX = _textBeginX;
+                        _currentY += _textNextLineY;
+                    }
+
+                    if (_currentY >= _textEndY)
+                    {
+                        _shownPage++;
+                        _page = _shownPage;
+                        _lastPageLineCount.insert(std::pair<int,int>(_page,_lineCount));
+                        _pageCharPos.insert(std::pair<int,int>(_page,_currentText.size()-1));
+                        _currentX = _textBeginX;
+                        _currentY = _textBeginY;
+                    }
+                    _currentX += charWidth;
                 }
 
             }
             inFile.close();
         }
-        FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-        PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
+        drawPage();
     }
     else
     {
@@ -117,7 +136,6 @@ int TextView::drawChar(const char &c)
 {
     int charWidth = CharWidth(c);
 
-    //in own function
     if (_currentX + charWidth > _textEndX){
         FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
         PartialUpdate(_currentX,_currentY, _cursorThickness,_textHeight);
@@ -215,6 +233,7 @@ void TextView::handleKeyEvents(int eventID, const string &path)
             //TODO make ü avialble
             unsigned char key;
 
+            //TODO Lock for menu button
             //TODO do in thread
             while(inputSession)
             {
@@ -258,11 +277,10 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                                             _currentY -= _textNextLineY;
                                             if (_currentY < _textBeginY)
                                                 removePage();
-                                            //doopelt
-                                            auto it = _lineWidth.find(_lineCount);
-                                            if (it != _lineWidth.end()){
+                                            //TODO twice
+                                            if (auto it = _lineWidth.find(_lineCount); it != _lineWidth.end())
                                                 _currentX = it->second;
-                                            }
+
                                             _lineWidth.erase(_lineCount);
                                             _lineCount--;
                                             FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
@@ -385,7 +403,7 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                                 altGrPressed = !altGrPressed;
                                 break;
                             default:
-                                break;
+                               break;
                         }
                     }
                 }
@@ -401,63 +419,62 @@ void TextView::handleKeyEvents(int eventID, const string &path)
     }
 }
 
-
 void TextView::removePage()
 {
     _shownPage--;
     _page = _shownPage;
+    drawPage();
+    //TODO do not subistute in other method for remove?
+    _lineCount++;
+}
+
+void TextView::drawPage()
+{
     FillAreaRect(&_contentRect, WHITE);
 
-    int line = _lineCount;
-    _currentY = _textEndY-_textNextLineY;
-
-    auto it = _lineWidth.find(line);
-    if (it != _lineWidth.end()){
-        _currentX = it->second;
-        line--;
-    }
-
-    for(int i=_currentText.size()-1; i >= 0;--i)
+    if(!_currentText.empty())
     {
-        if (_currentText.at(i) == '\n'){
-            //TODO doppelt
-            auto it = _lineWidth.find(line);
-            if (it != _lineWidth.end()){
-                _currentX = it->second;
-                line--;
-            }
-            _currentY -= _textNextLineY;
+        _currentX = _textBeginX;
+        _currentY = _textBeginY;
 
-            if (_currentY < (_textBeginY-_textNextLineY))
+        if (auto it = _lastPageLineCount.find(_shownPage); it != _lastPageLineCount.end())
+            _lineCount = it->second;
+
+        int lastPageCharPosition = 0;
+        if (auto it = _pageCharPos.find(_shownPage); it != _pageCharPos.end())
+            lastPageCharPosition = it->second;
+
+        for(int i=lastPageCharPosition; i < _currentText.size();++i)
+        {
+            if (_currentY >= _textEndY)
                 break;
-        }else{
 
-            int charWidth = CharWidth(_currentText.at(i));
+            if (_currentText.at(i) == '\n'){
+                _lineCount++;
+                _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
+                _currentX = _textBeginX;
+                _currentY += _textNextLineY;
+            }else{
+                int charWidth = CharWidth(_currentText.at(i));
 
-            if (_currentX -charWidth < _textBeginX){
-                auto it = _lineWidth.find(line);
-                if (it != _lineWidth.end()){
-                    _currentX = it->second;
-                    line--;
+                if (_currentX + charWidth > _textEndX){
+                    _lineCount++;
+                    _lineWidth.insert(std::pair<int,int>(_lineCount, _currentX));
+                    _currentX = _textBeginX;
+                    _currentY += _textNextLineY;
                 }
-                _currentY -= _textNextLineY;
+
+                _cursorPositionStr = _currentText.size();
+                SetFont(_textFont, BLACK);
+                DrawTextRect(_currentX,_currentY,charWidth,_textHeight,&_currentText.at(i),ALIGN_CENTER);
+                _currentX += charWidth;
             }
-
-            if (_currentY < (_textBeginY-_textNextLineY))
-                break;
-
-            SetFont(_textFont, BLACK);
-            _currentX -= charWidth;
-            DrawTextRect(_currentX,_currentY,charWidth,_textHeight,&_currentText.at(i),ALIGN_CENTER);
-
         }
-
+        _cursorPositionStr = _currentText.size();
     }
-    _currentY = _textEndY-_textNextLineY;
-    //needed here?
-    _cursorPositionStr = _currentText.size();
-
     drawFooter();
+    //TODO draw cursor on first enter
+    //FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
     PartialUpdate(_contentRect.x, _contentRect.y, _contentRect.w, _contentRect.h);
 }
 
@@ -465,9 +482,10 @@ void TextView::addPage()
 {
     _shownPage++;
     _page = _shownPage;
+    _lastPageLineCount.insert(std::pair<int,int>(_page,_lineCount));
+    _pageCharPos.insert(std::pair<int,int>(_page,_currentText.size()-1));
     _currentX = _textBeginX;
     _currentY = _textBeginY;
-    //needed here?
     _cursorPositionStr = _currentText.size();
 
     FillAreaRect(&_contentRect, WHITE);

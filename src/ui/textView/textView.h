@@ -48,6 +48,8 @@ private:
     int _currentY;
     int _cursorThickness = 4;
     int _cursorPositionStr;
+    std::map<int,int> _pageCharPos;
+    std::map<int,int> _lastPageLineCount;
     std::string _currentText;
     std::map<int,int> _lineWidth;
     std::map<int,char> _keyBindings;
