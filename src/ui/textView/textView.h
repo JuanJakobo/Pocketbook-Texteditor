@@ -31,11 +31,11 @@ public:
     ~TextView();
 
     /**
-        * Checkes if the listview has been clicked and either changes the page or returns item ID
+        * Checkes if the buttons on the bottom have been clicked, if they have been, executes function
         *
         * @param x x-coordinate
         * @param y y-coordinate
-        * @return true if was clicked
+        * @return always false as changing cursor is currently not supported
         */
     bool checkIfEntryClicked(int x, int y) override;
 
@@ -65,10 +65,41 @@ private:
     int _textHeight;
     ifont *_textFont;
 
+    //TODO documention and different methods in one
+
+    /**
+        * Draws a Char to the screen, if there is no more space, either calls addPage or jumps to next line
+        *
+        * @param char that shall be drawn
+        * @return width of the char
+        */
     int drawChar(const char &c);
+
+    /**
+        * loads a Keymap into the application to replicate keys
+        *
+        * @return true on sucess, false on error
+        */
     bool loadKeyMaps();
+
+    /**
+        * handles the keyevents that pop up
+        *
+        * @param eventID of the input device
+        * @param path of the file that shall be written
+        */
     void handleKeyEvents(int eventID, const std::string &path);
+
+    /**
+        * adds a new, empty Page
+        *
+        */
     void addPage();
+
+    /**
+        * removes a page
+        *
+        */
     void removePage();
 
 };

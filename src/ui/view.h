@@ -62,11 +62,15 @@ public:
     virtual bool checkIfEntryClicked(int x, int y) = 0;
 
     /**
-        * Clears the screen and draws entries and footer
+        * Clears the screen, rereads in the arguments and draws entries and footer
         *
         */
     virtual void draw() = 0;
 
+    /**
+        * Clears the screen and draws entries and footer for _shownPage
+        *
+        */
     virtual void drawPage() = 0;
 
 
