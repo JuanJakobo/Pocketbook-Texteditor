@@ -1,8 +1,10 @@
 # Pocketbook Texteditor
 Texteditor for Pocketbook that connects to an external bluetooth keyboard.
 
-<img src="/screenshots/usageExample.bmp" width="20%" height="20%">
-<img src="/screenshots/textEditorNoDevices.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorDeviceSelection.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorFileSelection.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="20%" height="20%">
+<img src="/screenshots/usageExample.jpg" width="50%" height="50%">
+
+### Screenshots
+<img src="/screenshots/textEditorFileSelection.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorMenu.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorInput.bmp" width="20%" height="20%">&nbsp;&nbsp;<img src="/screenshots/textEditorChooseOrientation.bmp" width="20%" height="20%">
 
 ## Tested on
 
@@ -24,8 +26,8 @@ Download and unzip the file from releases and place the texteditor.app into the 
 
 Currently the first pairing is not integrated into the application. Via the settings menu of the PB the registration of an keyboard is blocked. Therefore that has to be done once manually.
 Enable Bluetooth on the Pocketbook in the Settings menu.
-Open the PBTerm application and start bluetoothctl.
-There you have to pair your bluetooth keyboard. (https://wiki.archlinux.org/title/bluetooth_keyboard)
+Open the console and start bluetoothctl.
+There you have to pair your bluetooth keyboard. (a good guide can be found here https://wiki.archlinux.org/title/bluetooth_keyboard)
 
 Once you have the keyboard paired you can open the texteditor.app and should be able to see your keyboard. Once the keyboard is selected, the input mode is opened. (To exit input mode press "ESC")
 
