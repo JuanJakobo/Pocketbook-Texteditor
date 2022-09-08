@@ -320,8 +320,7 @@ void EventHandler::getLocalFiles(const string &path)
 {
 
     _currentPath = path;
-    FileBrowser fb = FileBrowser(true);
-    vector<FileItem> files = fb.getFileStructure(_currentPath);
+    vector<FileItem> files = FileBrowser::getFileStructure(path,true,true);
 
     _currentViews.reset(new ListView<FileViewEntry,FileItem>(_menu.getContentRect(),files));
     _currentView = Views::FIL;

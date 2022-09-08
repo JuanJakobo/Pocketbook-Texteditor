@@ -77,6 +77,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/api/
 )
 
-target_link_libraries(Texteditor.app PRIVATE inkview freetype)
+target_link_libraries(Texteditor.app PRIVATE inkview freetype stdc++fs)
 
 INSTALL (TARGETS Texteditor.app)
