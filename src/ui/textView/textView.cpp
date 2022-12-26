@@ -380,14 +380,16 @@ void TextView::handleKeyEvents(int eventID, const string &path)
                         }
                         if(key != 0)
                         {
-                            Log::writeInfoLog("eventcode " + std::to_string(event.code) + " key " + std::to_string(key));
+                            //Log::writeInfoLog("eventcode " + std::to_string(event.code) + " key " + std::to_string(key));
                             FillArea(_currentX,_currentY, _cursorThickness, _textHeight, WHITE);
 
                             _currentText += key;
                             int textWidth = drawChar(key);
 
-                            FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
-                            PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
+                            //TODO when fast typing hide, otherwise show cursor
+                            //FillArea(_currentX,_currentY, _cursorThickness,_textHeight, BLACK);
+                            //PartialUpdate(_currentX-textWidth,_currentY,textWidth+_cursorThickness,_textHeight);
+                            PartialUpdate(_currentX-textWidth,_currentY,textWidth,_textHeight);
                         }else{
                             //Message(1,"db",std::to_string(event.code).c_str(),1000);
                         }
